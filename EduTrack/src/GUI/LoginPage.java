@@ -73,7 +73,7 @@ public class LoginPage extends Page implements ActionListener {
         if (e.getSource() == studentButton) {
             try {
                 new StudentLoginPage();
-                dispose(); // Close current window after opening new page
+                frame.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
                 // Handle error opening StudentLoginPage
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
@@ -81,7 +81,7 @@ public class LoginPage extends Page implements ActionListener {
         } else if (e.getSource() == instructorButton) {
             try {
                 new InstructorLoginPage();
-                dispose();
+                frame.dispose();
             } catch(Exception ex){
                 // Add functionality for instructor button click (e.g., display message or open instructor login)
                 JOptionPane.showMessageDialog(this, "Instructor login not yet implemented.");
