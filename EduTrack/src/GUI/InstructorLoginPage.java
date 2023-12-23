@@ -97,7 +97,7 @@ public class InstructorLoginPage extends Page implements ActionListener {
         if (e.getSource() == signUpButton) {
             try {
                 new InstructorSignUpPage();
-                dispose(); // Close current window after opening new page
+                frame.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
                 // Handle error opening StudentLoginPage
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
