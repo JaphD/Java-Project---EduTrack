@@ -8,13 +8,12 @@ import java.awt.event.ActionListener;
 
 public class StudentSignUpPage extends Page implements ActionListener {
     private JLabel signUpLabel;
-    private JTextField usernameField, idNumberField, passwordField;
+    private JTextField firstNameField, lastNameField, userNameField, idNumberField, passwordField;
     private JPanel signUpPanel, inputPanel;
     private JButton signUpButton;
 
 
     StudentSignUpPage() {
-
         super("EduTrack - Student Sign Up", 800, 700, 211, 211, 211);
 
         // Create and configure the "Sign Up" label
@@ -36,19 +35,21 @@ public class StudentSignUpPage extends Page implements ActionListener {
         this.inputPanel = new JPanel(new GridBagLayout());
 
         // Name Label and TextField
-        addFormField("Username", usernameField = new JTextField(20), 0);
 
-        // Department Label and TextField
-        addFormField("ID Number", idNumberField = new JTextField(20), 1);
+        addFormField("First name", firstNameField = new JTextField(20),0);
 
-        // Course Label and TextField
-        addFormField("Password", passwordField = new JPasswordField(20),2);
+        addFormField("Last name", lastNameField = new JTextField(20),1);
+
+        addFormField("Username", userNameField = new JTextField(20), 2);
+
+        addFormField("ID Number", idNumberField = new JTextField(20), 3);
+
+        addFormField("Password", passwordField = new JPasswordField(20),4);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
         // Sign Up Button
         this.signUpButton = new JButton("Sign Up");
-        signUpButton.setFocusable(false);
         signUpButton.setFocusable(false);
         signUpButton.setFont(new Font("Arial", Font.BOLD, 18));
         signUpButton.setForeground(Color.white);
@@ -59,9 +60,9 @@ public class StudentSignUpPage extends Page implements ActionListener {
         constraints.insets = new Insets(10, 0, 10, 0); // Add some spacing below the last text field
         inputPanel.add(signUpButton, constraints);
 
-        frame.add(signUpPanel, BorderLayout.NORTH);
-        frame.add(inputPanel, BorderLayout.CENTER);
-        frame.setVisible(true);
+        page.add(signUpPanel, BorderLayout.NORTH);
+        page.add(inputPanel, BorderLayout.CENTER);
+        page.setVisible(true);
     }
     private void addFormField(String labelText, JComponent field, int gridY) {
         GridBagConstraints constraints = new GridBagConstraints();
@@ -79,7 +80,7 @@ public class StudentSignUpPage extends Page implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == signUpButton) {
-
+            JOptionPane.showMessageDialog(null, "Sign Up Successful!");
         }
     }
 }
