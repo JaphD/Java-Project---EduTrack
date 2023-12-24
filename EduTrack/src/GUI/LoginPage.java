@@ -6,13 +6,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
-
 public class LoginPage extends Page implements ActionListener {
     private JPanel loginPanel, centerPanel;
     private JLabel loginLabel;
     private JButton studentButton, instructorButton;
-
     LoginPage() {
         super("EduTrack-Login", 650, 550, 211, 211, 211);
 
@@ -56,9 +53,9 @@ public class LoginPage extends Page implements ActionListener {
         centerPanel.add(buttonPanel);
 
         // Add the panels to the main frame
-        frame.add(loginPanel, BorderLayout.NORTH);
-        frame.add(centerPanel, BorderLayout.CENTER);
-        frame.setVisible(true);
+        page.add(loginPanel, BorderLayout.NORTH);
+        page.add(centerPanel, BorderLayout.CENTER);
+        page.setVisible(true);
     }
     private void configureButton(JButton button) {
         button.setFocusable(false);
@@ -73,7 +70,7 @@ public class LoginPage extends Page implements ActionListener {
         if (e.getSource() == studentButton) {
             try {
                 new StudentLoginPage();
-                frame.dispose(); // Close current window after opening new page
+                page.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
                 // Handle error opening StudentLoginPage
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
@@ -81,7 +78,7 @@ public class LoginPage extends Page implements ActionListener {
         } else if (e.getSource() == instructorButton) {
             try {
                 new InstructorLoginPage();
-                frame.dispose();
+                page.dispose();
             } catch(Exception ex){
                 // Add functionality for instructor button click (e.g., display message or open instructor login)
                 JOptionPane.showMessageDialog(this, "Instructor login not yet implemented.");
