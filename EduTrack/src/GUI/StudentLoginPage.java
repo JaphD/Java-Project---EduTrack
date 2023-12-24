@@ -10,7 +10,7 @@ public class StudentLoginPage extends Page implements ActionListener {
     private JPanel loginPanel, inputPanel, buttonPanel;
     private JLabel usernameLabel, passwordLabel, loginLabel;
     private JTextField usernameField, passwordField;
-    private JButton signUpButton, loginButton;
+    private JButton signUpButton, loginButton, backButton;
 
     StudentLoginPage() {
         super("EduTrack - Student Login", 800, 700, 211, 211, 211);
@@ -80,10 +80,17 @@ public class StudentLoginPage extends Page implements ActionListener {
         inputPanel.add(loginButton);
         buttonPanel.add(loginButton);
 
-        frame.add(loginPanel, BorderLayout.NORTH);
-        frame.add(inputPanel, BorderLayout.CENTER);
-        frame.add(buttonPanel, BorderLayout.SOUTH);
-        frame.setVisible(true);
+        /* Back Button
+        this.backButton = new JButton("Back");
+        configureButton(backButton, 0, 5, 10, 0, 0, 0);
+        inputPanel.add(backButton);
+        buttonPanel.add(backButton);
+         */
+
+        page.add(loginPanel, BorderLayout.NORTH);
+        page.add(inputPanel, BorderLayout.CENTER);
+        page.add(buttonPanel, BorderLayout.SOUTH);
+        page.setVisible(true);
     }
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
@@ -97,10 +104,18 @@ public class StudentLoginPage extends Page implements ActionListener {
         if (e.getSource() == signUpButton) {
             try {
                 new StudentSignUpPage();
-                frame.dispose(); // Close current window after opening new page
+                page.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
                 // Handle error opening StudentLoginPage
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
+            }
+        }
+        else if(e.getSource() == loginButton){
+            try{
+                new StudentHomePage();
+                page.dispose();
+            } catch(Exception ex) {
+                JOptionPane.showMessageDialog(this,"Error opening Student Homepage" + ex.getMessage());
             }
         }
     }
