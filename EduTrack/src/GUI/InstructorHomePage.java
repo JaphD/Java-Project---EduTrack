@@ -51,6 +51,7 @@ public class InstructorHomePage extends Page {
         this.setIconImage(icon.getImage());
 
         this.setJMenuBar(instructorMenuBar);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
 
