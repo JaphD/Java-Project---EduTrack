@@ -58,6 +58,7 @@ public class StudentHomePage extends Page {
         this.setIconImage(icon.getImage());
 
         this.setJMenuBar(studentMenuBar);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
     private JPanel createPanel(String buttonText) {
