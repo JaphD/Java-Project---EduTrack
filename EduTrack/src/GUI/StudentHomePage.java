@@ -83,6 +83,7 @@ public  class StudentHomePage extends Page {
             this.setIconImage(icon.getImage());
         }
 
+        this.getContentPane().setBackground(new Color(70, 130, 180));
         this.setJMenuBar(studentMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
