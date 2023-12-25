@@ -32,6 +32,14 @@ public  class StudentHomePage extends Page {
             }
         });
 
+        quizRoomItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Handle logout button click event
+                quiz();
+            }
+        });
+
         logoutItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,6 +103,13 @@ public  class StudentHomePage extends Page {
         JMenuItem contactItem = new JMenuItem("Contact");
         JMenuItem logoutItem = new JMenuItem("Logout");
 
+        quizRoomItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Handle logout button click event
+                quiz();
+            }
+        });
 
         logoutItem.addActionListener(new ActionListener() {
             @Override
@@ -165,6 +180,10 @@ public  class StudentHomePage extends Page {
     }
     private void account(){
         new StudentAccountPage();
+        this.dispose();
+    }
+    private void quiz(){
+        new QuizRoomPage();
         this.dispose();
     }
     private void logout() {
