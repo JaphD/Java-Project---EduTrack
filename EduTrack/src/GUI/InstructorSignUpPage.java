@@ -7,8 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InstructorSignUpPage extends Page implements ActionListener {
-    private JLabel signUpLabel, nameLabel, departmentLabel, courseLabel, phoneNumberLabel, passwordLabel, securityKeyLabel;
-    private JTextField firstNameField, lastNameField, userNameField, departmentField, courseField, phoneNumberField, passwordField, securityKeyField;
+    private final JLabel signUpLabel;
+    private JLabel imageLabel;
+    private final JPanel imagePanel;
+    private JTextField firstNameField, lastNameField, userNameField, departmentField, courseField, emailField, passwordField, securityKeyField;
     private JPanel signUpPanel, inputPanel;
     private JButton signUpButton;
     InstructorSignUpPage() {
@@ -31,6 +33,27 @@ public class InstructorSignUpPage extends Page implements ActionListener {
         signUpPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         signUpPanel.add(signUpLabel, BorderLayout.CENTER);
 
+        // Create and configure the "Image" label with ImageIcon
+        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
+        if (imageIcon != null) {
+            this.imageLabel = new JLabel(imageIcon);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imageLabel.setOpaque(true);
+            Image scaledImage = imageIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(scaledImage));
+        }
+
+        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel.add(imageLabel,BorderLayout.CENTER);
+
+        // New Panel for login and image labels in the north
+        JPanel northPanel = new JPanel(new BorderLayout());
+
+        // Add login panel to the north panel
+        northPanel.add(signUpPanel, BorderLayout.NORTH);
+        northPanel.add(imagePanel,BorderLayout.SOUTH);
+
         this.inputPanel = new JPanel(new GridBagLayout());
 
         // Name Label and TextField
@@ -47,13 +70,11 @@ public class InstructorSignUpPage extends Page implements ActionListener {
         addFormField("Course", courseField = new JTextField(20), 4);
 
         // PhoneNumber Label and TextField
-        addFormField("Phone Number", phoneNumberField = new JTextField(20), 5);
+        addFormField("Email", emailField = new JTextField(20), 5);
 
         // Password Label and TextField
         addFormField("Password", passwordField = new JPasswordField(20), 6);
 
-        // Security Key Label and TextField
-        addFormField("Security Key", securityKeyField = new JPasswordField(20), 7);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -69,7 +90,7 @@ public class InstructorSignUpPage extends Page implements ActionListener {
         constraints.insets = new Insets(10, 0, 10, 0); // Add some spacing below the last text field
         inputPanel.add(signUpButton, constraints);
 
-        page.add(signUpPanel, BorderLayout.NORTH);
+        page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
         page.setVisible(true);
     }
@@ -94,11 +115,10 @@ public class InstructorSignUpPage extends Page implements ActionListener {
             String username = userNameField.getText();
             String department = departmentField.getText();
             String course = courseField.getText();
-            String phoneNumber = phoneNumberField.getText();
+            String email = emailField.getText();
             String password = passwordField.getText();
-            String securityKey = securityKeyField.getText();
 
-            if (isValidSignUpInput(firstName, lastName, username, department, course, phoneNumber, password, securityKey)) {
+            if (isValidSignUpInput(firstName, lastName, username, department, course, email, password)) {
                 try {
                     new StudentHomePage();
                     page.dispose();
@@ -111,24 +131,22 @@ public class InstructorSignUpPage extends Page implements ActionListener {
             }
         }
     }
-    private boolean isValidSignUpInput(String firstname, String lastname, String username, String department, String course, String phoneNumber, String password, String securityKey){
+    private boolean isValidSignUpInput(String firstname, String lastname, String username, String department, String course, String email, String password){
         String firstNameRegex = "^[a-zA-Z]{3,20}$";
         String lastNameRegex = "^[a-zA-Z]{3,20}$";
         String usernameRegex = "^[a-zA-Z0-9]{3,20}$";
         String departmentRegex = "^[a-zA-Z ]{7,60}$";
         String courseRegex = "^[a-zA-Z ]{7,60}$";
-        String phoneNumberRegex = "^[0-9]{10}$";
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
-        String securityKeyRegex = "^[0-9]{4}$";
 
         return (firstname.matches(firstNameRegex) &&
                 lastname.matches(lastNameRegex) &&
                 username.matches(usernameRegex) &&
                 department.matches(departmentRegex) &&
                 course.matches(courseRegex) &&
-                phoneNumber.matches(phoneNumberRegex) &&
-                password.matches(passwordRegex)) &&
-                securityKey.matches(securityKeyRegex);
+                email.matches(emailRegex) &&
+                password.matches(passwordRegex));
     }
 }
 

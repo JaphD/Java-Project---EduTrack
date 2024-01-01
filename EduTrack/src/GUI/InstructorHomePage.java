@@ -92,10 +92,13 @@ public class InstructorHomePage extends Page {
         instructorMenuBar.add(homeMenu);
         instructorMenuBar.add(menuMenu);
 
+         // Panel Color
+         Color backgroundColor = new Color(211,211,211);
+
         // Create panels for each button and set layout
-        JPanel announcementPanel = createPanel("Announcement");
-        JPanel studentListPanel = createPanel("Student List");
-        JPanel assignmentPanel = createPanel("Assignment");
+        JPanel announcementPanel = createPanel("Announcement","Announcement.png", "Announcement",backgroundColor);
+        JPanel studentListPanel = createPanel("Student List", "Student List.png", "Student List",backgroundColor);
+        JPanel assignmentPanel = createPanel("Assignment","Assignment.png", "Assignment",backgroundColor);
 
         announcementPanel.setBackground(Color.white);
         studentListPanel.setBackground(Color.white);
@@ -112,7 +115,7 @@ public class InstructorHomePage extends Page {
             this.setIconImage(icon.getImage());
         }
 
-        this.getContentPane().setBackground(new Color(70, 130, 180));
+        this.getContentPane().setBackground(new Color(238, 238,238));
         this.setJMenuBar(instructorMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -210,13 +213,28 @@ public class InstructorHomePage extends Page {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
-    private JPanel createPanel(String buttonText) {
+    private JPanel createPanel(String buttonText, String imagePath,String tooltipText,Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(backgroundColor);
 
         // Add buttons to panels with appropriate constraints
-        JButton button = new JButton(buttonText);
-        formatButton(button);
+        JButton button = new JButton();
+        button.setBorderPainted(false); // Make the button border invisible
+        button.setContentAreaFilled(false); // Make the button content area (background) invisible
+        button.setBorder(null);
+        button.setText("");
 
+        ImageIcon icon = createImageIcon(imagePath);
+        if(icon != null){
+            Image scaledImage = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            button.setIcon(new ImageIcon(scaledImage));
+
+            // Center the image within the button
+            button.setVerticalTextPosition(SwingConstants.BOTTOM);
+            button.setHorizontalTextPosition(SwingConstants.CENTER);
+        }
+
+        button.setToolTipText(tooltipText);
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -232,7 +250,6 @@ public class InstructorHomePage extends Page {
 
         return panel;
     }
-
     void formatButton(JButton button) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 30));

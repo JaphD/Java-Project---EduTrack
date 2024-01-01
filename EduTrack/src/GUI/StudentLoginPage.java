@@ -7,10 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class StudentLoginPage extends Page implements ActionListener {
-    private JPanel loginPanel, inputPanel, buttonPanel;
-    private JLabel usernameLabel, passwordLabel, loginLabel, iconLabel;
+    private JPanel loginPanel, inputPanel, buttonPanel, imagePanel;
+    private JLabel imageLabel, usernameLabel, passwordLabel, loginLabel;
     private JTextField usernameField, passwordField;
-    private JButton signUpButton, loginButton, backButton;
+    private JButton signUpButton, loginButton;
 
     StudentLoginPage() {
         super("EduTrack - Student Login", 800, 700, 211, 211, 211);
@@ -33,6 +33,19 @@ public class StudentLoginPage extends Page implements ActionListener {
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
 
         loginPanel.add(loginLabel, BorderLayout.CENTER);
+
+        // Create and configure the "Image" label with ImageIcon
+        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
+        if (imageIcon != null) {
+            this.imageLabel = new JLabel(imageIcon);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imageLabel.setOpaque(true);
+            Image scaledImage = imageIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(scaledImage));
+        }
+        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel.add(imageLabel,BorderLayout.CENTER);
 
         this.inputPanel = new JPanel(new GridBagLayout());
 
@@ -66,6 +79,13 @@ public class StudentLoginPage extends Page implements ActionListener {
         constraints.insets = new Insets(5, 0, 5, 0); // Add spacing to the left
         inputPanel.add(passwordField, constraints);
 
+        // New Panel for login and image labels in the north
+        JPanel centerPanel = new JPanel(new BorderLayout());
+
+        // Add login panel to the north panel
+        centerPanel.add(imagePanel, BorderLayout.NORTH);
+        centerPanel.add(inputPanel,BorderLayout.CENTER);
+
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // Sign Up Button
@@ -80,8 +100,8 @@ public class StudentLoginPage extends Page implements ActionListener {
         inputPanel.add(loginButton);
         buttonPanel.add(loginButton);
 
-        page.add(loginPanel, BorderLayout.NORTH);
-        page.add(inputPanel, BorderLayout.CENTER);
+        page.add(loginPanel,BorderLayout.NORTH);
+        page.add(centerPanel, BorderLayout.CENTER);
         page.add(buttonPanel, BorderLayout.SOUTH);
         page.setVisible(true);
     }
@@ -91,6 +111,7 @@ public class StudentLoginPage extends Page implements ActionListener {
         button.setForeground(Color.white);
         button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
         button.addActionListener(this);
+
     }
     @Override
     public void actionPerformed(ActionEvent e) {

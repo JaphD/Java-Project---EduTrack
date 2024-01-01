@@ -9,10 +9,15 @@ import java.awt.event.ActionListener;
 public class InstructorLoginPage extends Page implements ActionListener {
     private final JLabel securityKeyLabel;
     private final JPasswordField securityKeyField;
-    private final JPanel loginPanel, inputPanel, buttonPanel;
-    private final JLabel usernameLabel, passwordLabel, loginLabel;
+    private final JPanel loginPanel, imagePanel, inputPanel, buttonPanel;
+    private JLabel imageLabel;
+    private final JLabel usernameLabel;
+    private final JLabel passwordLabel;
+    private final JLabel loginLabel;
     private final JTextField usernameField, passwordField;
     private final JButton signUpButton, loginButton;
+
+
 
     InstructorLoginPage() {
         super("EduTrack - Instructor Login", 800, 700, 211, 211, 211);
@@ -33,6 +38,26 @@ public class InstructorLoginPage extends Page implements ActionListener {
         this.loginPanel = new JPanel(new BorderLayout());
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         loginPanel.add(loginLabel, BorderLayout.CENTER);
+
+        // Create and configure the "Image" label with ImageIcon
+        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
+        if (imageIcon != null) {
+            this.imageLabel = new JLabel(imageIcon);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imageLabel.setOpaque(true);
+            Image scaledImage = imageIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(scaledImage));
+        }
+        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel.add(imageLabel,BorderLayout.CENTER);
+
+        // New Panel for login and image labels in the north
+        JPanel northPanel = new JPanel(new BorderLayout());
+
+        // Add login panel to the north panel
+        northPanel.add(loginPanel, BorderLayout.NORTH);
+        northPanel.add(imagePanel,BorderLayout.SOUTH);
 
         this.inputPanel = new JPanel(new GridBagLayout());
 
@@ -93,14 +118,8 @@ public class InstructorLoginPage extends Page implements ActionListener {
         configureButton(loginButton, 10, 0);
         buttonPanel.add(loginButton);
 
-        /* Back Button
-        this.backButton = new JButton("Back");
-        configureButton(backButton, 0, 5, 10, 0, 0, 0);
-        inputPanel.add(backButton);
-        buttonPanel.add(backButton);
-         */
 
-        page.add(loginPanel, BorderLayout.NORTH);
+        page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
         page.add(buttonPanel, BorderLayout.SOUTH); // Add button panel below the input panel
         page.setVisible(true);

@@ -7,9 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class StudentSignUpPage extends Page implements ActionListener {
-    private JLabel signUpLabel;
+    private JLabel signUpLabel, imageLabel;
     private JTextField firstNameField, lastNameField, userNameField, idNumberField, passwordField;
-    private JPanel signUpPanel, inputPanel;
+    private JPanel signUpPanel, imagePanel, inputPanel;
     private JButton signUpButton;
     StudentSignUpPage() {
         super("EduTrack - Student Sign Up", 800, 700, 211, 211, 211);
@@ -29,6 +29,26 @@ public class StudentSignUpPage extends Page implements ActionListener {
         this.signUpPanel = new JPanel(new BorderLayout());
         signUpPanel.setPreferredSize(new Dimension(0, 120));
         signUpPanel.add(signUpLabel, BorderLayout.CENTER);
+
+        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
+        if (imageIcon != null) {
+            this.imageLabel = new JLabel(imageIcon);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imageLabel.setOpaque(true);
+            Image scaledImage = imageIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(scaledImage));
+        }
+
+        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel.add(imageLabel,BorderLayout.CENTER);
+
+        // New Panel for login and image labels in the north
+        JPanel northPanel = new JPanel(new BorderLayout());
+
+        // Add login panel to the north panel
+        northPanel.add(signUpPanel, BorderLayout.NORTH);
+        northPanel.add(imagePanel,BorderLayout.SOUTH);
 
         this.inputPanel = new JPanel(new GridBagLayout());
 
@@ -58,7 +78,7 @@ public class StudentSignUpPage extends Page implements ActionListener {
         constraints.insets = new Insets(10, 0, 10, 0); // Add some spacing below the last text field
         inputPanel.add(signUpButton, constraints);
 
-        page.add(signUpPanel, BorderLayout.NORTH);
+        page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
         page.setVisible(true);
     }

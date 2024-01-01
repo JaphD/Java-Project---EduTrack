@@ -104,20 +104,17 @@ public  class StudentHomePage extends Page {
 
         studentMenuBar.add(homeMenu);
         studentMenuBar.add(menuMenu);
+        // Panel Color
+        Color backgroundColor = new Color(211,211,211);
 
         // Create panels for each button and set layout
-        JPanel announcementPanel = createPanel("Announcement");
-        JPanel schedulePanel = createPanel("Schedule");
-        JPanel materialPanel = createPanel("Course Material");
-        JPanel assignmentPanel = createPanel("Assignment");
-
-        announcementPanel.setBackground(Color.white);
-        schedulePanel.setBackground(Color.white);
-        materialPanel.setBackground(Color.white);
-        assignmentPanel.setBackground(Color.white);
+        JPanel announcementPanel = createPanel("Announcement", "Announcement.png", "Announcement", backgroundColor);
+        JPanel schedulePanel = createPanel("Schedule", "Schedule.png", "Schedule",backgroundColor);
+        JPanel materialPanel = createPanel("Course Material","Course Material.png", "Course Material", backgroundColor);
+        JPanel assignmentPanel = createPanel("Assignment", "Assignment.png", "Assignment", backgroundColor);
 
         // Add panels to the main layout
-        this.setLayout(new GridLayout(2, 2, 30, 20)); // Adjusted grid layout with reduced spacing
+        this.setLayout(new GridLayout(2, 2, 30, 30)); // Adjusted grid layout with reduced spacing
         this.add(announcementPanel);
         this.add(schedulePanel);
         this.add(materialPanel);
@@ -127,7 +124,7 @@ public  class StudentHomePage extends Page {
         if (icon != null) {
             this.setIconImage(icon.getImage());
         }
-        this.getContentPane().setBackground(new Color(70, 130, 180));
+        this.getContentPane().setBackground(new Color(238,238,238));
         this.setJMenuBar(studentMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -233,13 +230,28 @@ public  class StudentHomePage extends Page {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
-    private JPanel createPanel(String buttonText) {
+    private JPanel createPanel(String buttonText, String imagePath,String tooltipText, Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(backgroundColor);
 
         // Add buttons to panels with appropriate constraints
-        JButton button = new JButton(buttonText);
-        formatButton(button);
+        JButton button = new JButton();
+        button.setBorderPainted(false); // Make the button border invisible
+        button.setContentAreaFilled(false); // Make the button content area (background) invisible
+        button.setBorder(null);
+        button.setText("");
 
+        ImageIcon icon = createImageIcon(imagePath);
+        if(icon != null){
+            Image scaledImage = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            button.setIcon(new ImageIcon(scaledImage));
+
+            // Center the image within the button
+            button.setVerticalTextPosition(SwingConstants.BOTTOM);
+            button.setHorizontalTextPosition(SwingConstants.CENTER);
+        }
+
+        button.setToolTipText(tooltipText);
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -255,34 +267,6 @@ public  class StudentHomePage extends Page {
 
         return panel;
     }
-    /*
-    private void addMouseListenerToPanel(JPanel panel, String imageName) {
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                ImageIcon icon = createImageIcon(imageName);
-                if (icon != null) {
-                    setPanelImage(panel, icon);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                // You can set a default image or clear the image when the mouse exits
-                // For now, setting it to null
-                setPanelImage(panel, null);
-
-
-            }
-        });
-    }
-
-    private void setPanelImage(JPanel panel, ImageIcon icon) {
-        // Assuming the panel uses a JLabel to display the image
-        JLabel label = (JLabel) panel.getComponent(0); // Adjust this if necessary
-        label.setIcon(icon);
-    }
-     */
     void formatButton(JButton button) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 30));
