@@ -30,27 +30,6 @@ public class LoginPage extends Page implements ActionListener {
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
-        /*
-        //Create Image label
-        ImageIcon icon = createImageIcon("icon2.jpeg");
-
-        ImageIcon originalIcon = createImageIcon("icon2.jpeg");
-        if (originalIcon != null) {
-            Image originalImage = originalIcon.getImage();
-            Image scaledImage = originalImage.getScaledInstance(50, 50, Image.SCALE_SMOOTH); // Adjust width and height as needed
-            this.imageLabel = new JLabel(icon);
-        }
-
-        //Create image panel
-        this.imagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        imagePanel.add(imageLabel);
-
-        //Container for both loginPanel and imagePanel
-        this.loginImagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-        loginImagePanel.add(loginPanel,BorderLayout.NORTH);
-        loginImagePanel.add(imagePanel,BorderLayout.SOUTH);
-        */
         // Create buttons for "Student" and "Instructor"
         // Student JButton
         studentButton = new JButton("Student");

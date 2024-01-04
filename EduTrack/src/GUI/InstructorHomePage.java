@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class InstructorHomePage extends Page {
+public class InstructorHomePage extends Page{
     private JMenuBar instructorMenuBar;
      InstructorHomePage() {
         super("EduTrack - Instructor Homepage",211, 211, 211);
@@ -22,52 +22,17 @@ public class InstructorHomePage extends Page {
         JMenuItem accountItem = new JMenuItem("Account");
         JMenuItem assessmentItem = new JMenuItem("Assessment");
         JMenuItem attendanceItem = new JMenuItem("Attendance");
-        JMenuItem courseItem = new JMenuItem("Course Material");
+         JMenuItem scheduleItem = new JMenuItem("Schedule");
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
         JMenuItem contactItem = new JMenuItem("Contact");
 
-        homeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                home();
-            }
-        });
-
-        logoutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                logout();
-            }
-        });
-
-        accountItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                account();
-            }
-        });
-
-        assessmentItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                assessment();
-            }
-        });
-
-        courseItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                course();
-            }
-        });
-
-        contactItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                contact();
-            }
-        });
+        addMenuItemListener(homeItem, e -> {}, this::home);
+        addMenuItemListener(logoutItem, e -> {}, this::logout);
+        addMenuItemListener(accountItem, e -> {}, this::account);
+        addMenuItemListener(assessmentItem, e -> {}, this::assessment);
+        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
+        addMenuItemListener(scheduleItem, e -> {}, this:: schedule);
+        addMenuItemListener(contactItem, e -> {}, this::contact);
 
         formatMenuItem(homeItem);
         formatMenuItem(logoutItem);
@@ -75,7 +40,7 @@ public class InstructorHomePage extends Page {
         formatMenuItem(accountItem);
         formatMenuItem(assessmentItem);
         formatMenuItem(attendanceItem);
-        formatMenuItem(courseItem);
+        formatMenuItem(scheduleItem);
         formatMenuItem(quizRoomItem);
         formatMenuItem(contactItem);
 
@@ -85,7 +50,7 @@ public class InstructorHomePage extends Page {
         menuMenu.add(accountItem);
         menuMenu.add(assessmentItem);
         menuMenu.add(attendanceItem);
-        menuMenu.add(courseItem);
+        menuMenu.add(scheduleItem);
         menuMenu.add(quizRoomItem);
         menuMenu.add(contactItem);
 
@@ -98,16 +63,14 @@ public class InstructorHomePage extends Page {
         // Create panels for each button and set layout
         JPanel announcementPanel = createPanel("Announcement","Announcement.png", "Announcement",backgroundColor);
         JPanel studentListPanel = createPanel("Student List", "Student List.png", "Student List",backgroundColor);
+        JPanel courseMaterialPanel = createPanel("Course Material","Course Material.png", "Course Material",backgroundColor);
         JPanel assignmentPanel = createPanel("Assignment","Assignment.png", "Assignment",backgroundColor);
 
-        announcementPanel.setBackground(Color.white);
-        studentListPanel.setBackground(Color.white);
-        assignmentPanel.setBackground(Color.white);
-
         // Add panels to the main layout
-        this.setLayout(new GridLayout(2, 1, 20, 20)); // Adjusted grid layout with reduced spacing
+        this.setLayout(new GridLayout(2, 1, 30, 30)); // Adjusted grid layout with reduced spacing
         this.add(announcementPanel);
         this.add(studentListPanel);
+        this.add(courseMaterialPanel);
         this.add(assignmentPanel);
 
         ImageIcon icon = createImageIcon("icon2.jpeg");
@@ -115,13 +78,13 @@ public class InstructorHomePage extends Page {
             this.setIconImage(icon.getImage());
         }
 
-        this.getContentPane().setBackground(new Color(238, 238,238));
+        this.getContentPane().setBackground(new Color(173, 216, 230));
         this.setJMenuBar(instructorMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
     InstructorHomePage(String title){
-        super("EduTrack - Instructor Homepage",211, 211, 211);
+        super(title,211, 211, 211);
         this.setTitle(title);
         this.instructorMenuBar = new JMenuBar();
 
@@ -134,52 +97,17 @@ public class InstructorHomePage extends Page {
         JMenuItem accountItem = new JMenuItem("Account");
         JMenuItem assessmentItem = new JMenuItem("Assessment");
         JMenuItem attendanceItem = new JMenuItem("Attendance");
-        JMenuItem courseItem = new JMenuItem("Course Material");
+        JMenuItem scheduleItem = new JMenuItem("Schedule");
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
         JMenuItem contactItem = new JMenuItem("Contact");
 
-        homeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                home();
-            }
-        });
-
-        logoutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                logout();
-            }
-        });
-
-        accountItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                account();
-            }
-        });
-
-        assessmentItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                assessment();
-            }
-        });
-
-        courseItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                course();
-            }
-        });
-
-        contactItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                contact();
-            }
-        });
+        addMenuItemListener(homeItem, e -> {}, this::home);
+        addMenuItemListener(logoutItem, e -> {}, this::logout);
+        addMenuItemListener(accountItem, e -> {}, this::account);
+        addMenuItemListener(assessmentItem, e -> {}, this::assessment);
+        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
+        addMenuItemListener(scheduleItem, e -> {}, this::schedule);
+        addMenuItemListener(contactItem, e -> {}, this::contact);
 
         formatMenuItem(homeItem);
         formatMenuItem(logoutItem);
@@ -187,7 +115,7 @@ public class InstructorHomePage extends Page {
         formatMenuItem(accountItem);
         formatMenuItem(assessmentItem);
         formatMenuItem(attendanceItem);
-        formatMenuItem(courseItem);
+        formatMenuItem(scheduleItem);
         formatMenuItem(quizRoomItem);
         formatMenuItem(contactItem);
 
@@ -197,7 +125,7 @@ public class InstructorHomePage extends Page {
         menuMenu.add(accountItem);
         menuMenu.add(assessmentItem);
         menuMenu.add(attendanceItem);
-        menuMenu.add(courseItem);
+        menuMenu.add(scheduleItem);
         menuMenu.add(quizRoomItem);
         menuMenu.add(contactItem);
 
@@ -212,6 +140,15 @@ public class InstructorHomePage extends Page {
         this.setJMenuBar(instructorMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
+    }
+    private void addMenuItemListener(JMenuItem menuItem, ActionListener listener, ActionMethod action) {
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listener.actionPerformed(e);
+                action.performAction();
+            }
+        });
     }
     private JPanel createPanel(String buttonText, String imagePath,String tooltipText,Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -226,7 +163,7 @@ public class InstructorHomePage extends Page {
 
         ImageIcon icon = createImageIcon(imagePath);
         if(icon != null){
-            Image scaledImage = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            Image scaledImage = icon.getImage().getScaledInstance(125, 125, Image.SCALE_SMOOTH);
             button.setIcon(new ImageIcon(scaledImage));
 
             // Center the image within the button
@@ -278,8 +215,12 @@ public class InstructorHomePage extends Page {
         new InstructorAssessmentPage();
         this.dispose();
     }
-    private void course(){
-        new InstructorCourseMaterialPage();
+    private void attendance(){
+        new InstructorAttendancePage();
+        this.dispose();
+    }
+    private void schedule(){
+        new InstructorSchedulePage();
         this.dispose();
     }
     private void contact(){
@@ -288,32 +229,25 @@ public class InstructorHomePage extends Page {
     }
     void handleButtonClick(String buttonText) {
         switch (buttonText) {
-            /*
             case "Announcement":
                 // Create and show a new instance of StudentAnnouncementPage
                 new InstructorAnnouncementPage();
                 this.dispose(); // Dispose of the current page
                 break;
-
             case "Student List":
                 // Create and show a new instance of StudentSchedulePage
                 new InstructorStudentListPage();
                 this.dispose(); // Dispose of the current page
                 break;
-
-                 */
             case "Assignment":
                 // Create and show a new instance of StudentAssignmentPage
                 new InstructorAssignmentPage();
                 this.dispose(); // Dispose of the current page
                 break;
-                /*
-            case "Schedule":
-                new InstructorSchedulePage();
+            case "Course Material":
+                new InstructorCourseMaterialPage();
                 this.dispose();
                 break;
-
-                 */
             default:
                 // Handle unknown button text
                 break;

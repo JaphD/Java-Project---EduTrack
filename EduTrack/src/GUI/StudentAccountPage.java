@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class StudentAccountPage extends StudentHomePage implements ActionListener {
-    private JPanel profilePanel, inputPanel;
+    private JPanel profilePanel;
     private JLabel titleLabel, usernameLabel, passwordLabel;
     private JTextField userNameField;
     private JPasswordField passwordField;
@@ -37,13 +37,14 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
         profilePanel.setPreferredSize(new Dimension(0, 120));
         profilePanel.add(titleLabel, BorderLayout.CENTER);
 
-        this.inputPanel = new JPanel(new GridBagLayout());
+        inputPanel = new JPanel(new GridBagLayout());
 
         // Load data from the database
         loadDataFromDatabase();
 
-        addFormField("Username", userNameField = new JTextField(20), 0);
-        addFormField("Password", passwordField = new JPasswordField(20), 1);
+        addFormField("Old Password", userNameField = new JTextField(20), 0);
+        addFormField("Old Password", passwordField = new JPasswordField(20), 1);
+        addFormField("New Password", passwordField = new JPasswordField(20), 2);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -54,7 +55,7 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
         editButton.setForeground(Color.white);
         editButton.setBackground(new Color(70, 130, 180));
         editButton.addActionListener(this);
-        constraints.gridy = 2;
+        constraints.gridy = 3;
         constraints.gridx = 1;
         constraints.insets = new Insets(10, 0, 10, 0);
         inputPanel.add(editButton, constraints);
@@ -97,20 +98,6 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error loading data from the database: " + e.getMessage());
         }
-    }
-
-    private void addFormField(String labelText, JComponent field, int gridY) {
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridy = gridY;
-        constraints.gridx = 0;
-        constraints.insets = new Insets(5, 0, 5, 10);
-
-        JLabel label = new JLabel(labelText);
-        inputPanel.add(label, constraints);
-
-        constraints.gridx = 1;
-        constraints.insets = new Insets(5, 0, 5, 0);
-        inputPanel.add(field, constraints);
     }
 
     // Implement the getUserId method to return the user's ID

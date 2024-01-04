@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InstructorAccountPage extends InstructorHomePage implements ActionListener {
-    private JPanel profilePanel, inputPanel;
+    private JPanel profilePanel;
     private JLabel titleLabel, usernameLabel, passwordLabel;
     private JTextField  userNameField, phoneNumberField;
     private JPasswordField passwordField;
@@ -33,13 +33,13 @@ public class InstructorAccountPage extends InstructorHomePage implements ActionL
         profilePanel.setPreferredSize(new Dimension(0, 120));
         profilePanel.add(titleLabel, BorderLayout.CENTER);
 
-        this.inputPanel = new JPanel(new GridBagLayout());
+        inputPanel = new JPanel(new GridBagLayout());
 
-        addFormField("Username", userNameField = new JTextField(20), 0);
+        addFormField("Old Password", userNameField = new JTextField(20), 0);
 
-        addFormField("Phone Number", phoneNumberField = new JTextField(20),1);
+        addFormField("Old Password", phoneNumberField = new JTextField(20),1);
 
-        addFormField("Password", passwordField = new JPasswordField(20), 2);
+        addFormField("New Password", passwordField = new JPasswordField(20), 2);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -59,20 +59,6 @@ public class InstructorAccountPage extends InstructorHomePage implements ActionL
         setLayout(new BorderLayout());
         add(profilePanel, BorderLayout.NORTH);
         add(inputPanel, BorderLayout.CENTER);
-    }
-
-    private void addFormField(String labelText, JComponent field, int gridY) {
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridy = gridY;
-        constraints.gridx = 0;
-        constraints.insets = new Insets(5, 0, 5, 10);
-
-        JLabel label = new JLabel(labelText);
-        inputPanel.add(label, constraints);
-
-        constraints.gridx = 1;
-        constraints.insets = new Insets(5, 0, 5, 0);
-        inputPanel.add(field, constraints);
     }
     @Override
     public void actionPerformed(ActionEvent e) {

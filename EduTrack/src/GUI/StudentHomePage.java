@@ -1,14 +1,11 @@
 package GUI;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-public  class StudentHomePage extends Page {
+public  class StudentHomePage extends Page{
     protected JMenu homeMenu, menuMenu;
     protected JMenuItem homeItem, logoutItem, accountItem, assessmentItem, attendanceItem, quizRoomItem, contactItem;
     private JMenuBar studentMenuBar;
@@ -30,59 +27,13 @@ public  class StudentHomePage extends Page {
         this.quizRoomItem = new JMenuItem("Quiz Room");
         this.contactItem = new JMenuItem("Contact");
 
-        homeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                home();
-            }
-        });
-
-        logoutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                logout();
-            }
-        });
-
-        accountItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                account();
-            }
-        });
-
-        assessmentItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                assessment();
-            }
-        });
-
-        attendanceItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                attendance();
-            }
-        });
-
-        quizRoomItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                quiz();
-            }
-        });
-
-        contactItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                contact();
-            }
-        });
+        addMenuItemListener(homeItem, e -> {}, this::home);
+        addMenuItemListener(logoutItem, e -> {}, this::logout);
+        addMenuItemListener(accountItem, e -> {}, this::account);
+        addMenuItemListener(assessmentItem, e -> {}, this::assessment);
+        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
+        addMenuItemListener(quizRoomItem, e -> {}, this::quiz);
+        addMenuItemListener(contactItem, e -> {}, this::contact);
 
         formatMenuItem(homeItem);
         formatMenuItem(logoutItem);
@@ -124,7 +75,7 @@ public  class StudentHomePage extends Page {
         if (icon != null) {
             this.setIconImage(icon.getImage());
         }
-        this.getContentPane().setBackground(new Color(238,238,238));
+        this.getContentPane().setBackground(new Color(70,130,180));
         this.setJMenuBar(studentMenuBar);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -146,59 +97,13 @@ public  class StudentHomePage extends Page {
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
         JMenuItem contactItem = new JMenuItem("Contact");
 
-        homeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                home();
-            }
-        });
-
-        logoutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                logout();
-            }
-        });
-
-        accountItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                account();
-            }
-        });
-
-        assessmentItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                assessment();
-            }
-        });
-
-        attendanceItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                attendance();
-            }
-        });
-
-        quizRoomItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Handle logout button click event
-                quiz();
-            }
-        });
-
-        contactItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                contact();
-            }
-        });
+        addMenuItemListener(homeItem, e -> {}, this::home);
+        addMenuItemListener(logoutItem, e -> {}, this::logout);
+        addMenuItemListener(accountItem, e -> {}, this::account);
+        addMenuItemListener(assessmentItem, e -> {}, this::assessment);
+        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
+        addMenuItemListener(quizRoomItem, e -> {}, this::quiz);
+        addMenuItemListener(contactItem, e -> {}, this::contact);
 
         formatMenuItem(homeItem);
         formatMenuItem(logoutItem);
@@ -230,6 +135,16 @@ public  class StudentHomePage extends Page {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
     }
+    private void addMenuItemListener(JMenuItem menuItem, ActionListener listener, ActionMethod action) {
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listener.actionPerformed(e);
+                action.performAction();
+            }
+        });
+    }
+
     private JPanel createPanel(String buttonText, String imagePath,String tooltipText, Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(backgroundColor);
@@ -243,7 +158,7 @@ public  class StudentHomePage extends Page {
 
         ImageIcon icon = createImageIcon(imagePath);
         if(icon != null){
-            Image scaledImage = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            Image scaledImage = icon.getImage().getScaledInstance(125, 125, Image.SCALE_SMOOTH);
             button.setIcon(new ImageIcon(scaledImage));
 
             // Center the image within the button
@@ -302,7 +217,7 @@ public  class StudentHomePage extends Page {
     }
 
     private void quiz() {
-        new QuizRoomPage();
+        new StudentQuizRoomPage();
         this.dispose();
     }
     private void contact() {

@@ -5,20 +5,19 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class InstructorLoginPage extends Page implements ActionListener {
-    private final JLabel securityKeyLabel;
+
     private final JPasswordField securityKeyField;
-    private final JPanel loginPanel, imagePanel, inputPanel, buttonPanel;
-    private JLabel imageLabel;
-    private final JLabel usernameLabel;
-    private final JLabel passwordLabel;
+    private final JPanel loginPanel, imagePanel, buttonPanel;
     private final JLabel loginLabel;
     private final JTextField usernameField, passwordField;
     private final JButton signUpButton, loginButton;
-
-
-
     InstructorLoginPage() {
         super("EduTrack - Instructor Login", 800, 700, 211, 211, 211);
 
@@ -39,16 +38,6 @@ public class InstructorLoginPage extends Page implements ActionListener {
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
-        // Create and configure the "Image" label with ImageIcon
-        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
-        if (imageIcon != null) {
-            this.imageLabel = new JLabel(imageIcon);
-            imageLabel.setHorizontalAlignment(JLabel.CENTER);
-            imageLabel.setVerticalAlignment(JLabel.CENTER);
-            imageLabel.setOpaque(true);
-            Image scaledImage = imageIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
-            imageLabel.setIcon(new ImageIcon(scaledImage));
-        }
         this.imagePanel = new JPanel(new BorderLayout());
         imagePanel.add(imageLabel,BorderLayout.CENTER);
 
@@ -59,82 +48,42 @@ public class InstructorLoginPage extends Page implements ActionListener {
         northPanel.add(loginPanel, BorderLayout.NORTH);
         northPanel.add(imagePanel,BorderLayout.SOUTH);
 
-        this.inputPanel = new JPanel(new GridBagLayout());
+        inputPanel = new JPanel(new GridBagLayout());
 
-        // Username Label and TextField
-        this.usernameLabel = new JLabel("Username:");
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridy = 0;
-        constraints.gridx = 0;
-        constraints.insets = new Insets(0, 0, 5, 10); // Add spacing to the right
-        inputPanel.add(usernameLabel, constraints);
+        addFormField("Username", usernameField = new JTextField(20),0);
+        addFormField("Password", passwordField = new JTextField(20),1);
+        addFormField("Security Key", securityKeyField = new JPasswordField(20),2);
 
-        this.usernameField = new JTextField(20);
-        constraints = new GridBagConstraints();
-        constraints.gridy = 0;
-        constraints.gridx = 1;
-        constraints.insets = new Insets(0, 0, 5, 0); // Add spacing to the left
-        inputPanel.add(usernameField, constraints);
+        this.constraints = new GridBagConstraints();
 
-        // Password Label and TextField
-        this.passwordLabel = new JLabel("Password:");
-        constraints = new GridBagConstraints();
-        constraints.gridy = 1;
-        constraints.gridx = 0;
-        constraints.insets = new Insets(5, 0, 5, 10); // Add spacing to the right
-        inputPanel.add(passwordLabel, constraints);
-
-        this.passwordField = new JPasswordField(20);
-        constraints = new GridBagConstraints();
-        constraints.gridy = 1;
-        constraints.gridx = 1;
-        constraints.insets = new Insets(5, 0, 5, 0); // Add spacing to the left
-        inputPanel.add(passwordField, constraints);
-
-        //Security Key Label and TextField
-        this.securityKeyLabel = new JLabel("Security Key:");
-        constraints = new GridBagConstraints();
-        constraints.gridy = 2;
-        constraints.gridx = 0;
-        constraints.insets = new Insets(5, 0, 5, 10); // Add spacing to the right
-        inputPanel.add(securityKeyLabel, constraints);
-
-        this.securityKeyField = new JPasswordField(20);
-        constraints = new GridBagConstraints();
-        constraints.gridy = 2;
-        constraints.gridx = 1;
-        constraints.insets = new Insets(5, 0, 5, 0); // Add spacing to the left
-        inputPanel.add(securityKeyField, constraints);
 
         this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // Sign Up Button
         this.signUpButton = new JButton("Sign Up");
-        configureButton(signUpButton, 10, 0);
+        configureButton(signUpButton, 1,2,10,0,10,0);
         buttonPanel.add(signUpButton);
 
         // Login Button
         this.loginButton = new JButton("Login");
-        configureButton(loginButton, 10, 0);
+        configureButton(loginButton, 2,2,10,10,0,0);
         buttonPanel.add(loginButton);
-
 
         page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
         page.add(buttonPanel, BorderLayout.SOUTH); // Add button panel below the input panel
         page.setVisible(true);
     }
-
-    private void configureButton(JButton button, int right, int bottom) {
+    private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 18));
         button.setForeground(Color.white);
         button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
         button.addActionListener(this);
-
-        buttonPanel.add(button);
+        constraints.gridy = gridy;
+        constraints.gridx = gridx;
+        constraints.insets = new Insets(top,left, bottom, right); // Add some spacing below the last text field
     }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == signUpButton) {
@@ -153,10 +102,35 @@ public class InstructorLoginPage extends Page implements ActionListener {
 
             if(areNotNull(username, password, securityKey)) {
                 try {
-                    new InstructorHomePage();
-                    page.dispose();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error opening Student Homepage" + ex.getMessage());
+                    // Send credentials to server (example using a Socket):
+                    try {
+                        Socket socket = new Socket(ip, 500); // Replace with server address and port
+                        OutputStream out = socket.getOutputStream();
+
+                        // Send data in a structured format (e.g., CSV)
+                        String data = String.format("%s,%s,%s\n", username, password, securityKey);
+                        out.write(data.getBytes());
+
+                        InputStream in = socket.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                        String response = reader.readLine();
+
+                        if (response.equals("Success")) {
+                            new InstructorHomePage();
+                            page.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Login failed. Please check your credentials.");
+                        }
+
+                        out.close();
+                        in.close();
+                        socket.close();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "An error has occurred please try again" + ex.getMessage());
+                    }
+                }
+                catch(Exception ex){
+                    JOptionPane.showMessageDialog(this, "Error opening Instructor Homepage" + ex.getMessage());
                 }
             }
             else {
