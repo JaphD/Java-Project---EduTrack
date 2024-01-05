@@ -4,11 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 
 abstract class Page extends JFrame {
     protected JFrame page;
-    private String title;
+    protected String title;
     protected JPanel inputPanel;
     protected JLabel imageLabel = createImageLabel();
     private int backgroundColorRed, backgroundColorGreen, backgroundColorBlue;
@@ -97,8 +98,19 @@ abstract class Page extends JFrame {
                 password != null && !password.trim().isEmpty() &&
                 securityKey != null && !securityKey.trim().isEmpty();
     }
-
-        abstract void actionPerformed(ActionEvent e);
+    void formatButton(JButton button) {
+        button.setFocusable(false);
+        button.setFont(new Font("Arial", Font.BOLD, 30));
+        button.setForeground(Color.white);
+        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
+    }
+    void formatMenuItem(JMenuItem menuItem) {
+        menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
+        menuItem.setForeground(new Color(70, 130, 180));
+        menuItem.setBackground(Color.WHITE);
+        menuItem.setHorizontalAlignment(SwingConstants.LEADING);
+    }
+    abstract void actionPerformed(ActionEvent e);
 }
 
 

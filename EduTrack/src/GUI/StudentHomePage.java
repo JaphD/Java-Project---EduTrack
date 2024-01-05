@@ -12,57 +12,16 @@ public  class StudentHomePage extends Page{
 
     public StudentHomePage() {
         super("EduTrack - Student Homepage", 211, 211, 211);
-        this.setTitle("EduTrack - Student Homepage");
-        this.studentMenuBar = new JMenuBar();
 
-        this.homeMenu = new JMenu("Home");
-        this.menuMenu = new JMenu("Menu");
-
-        this.homeItem = new JMenuItem("Home");
-        this.logoutItem = new JMenuItem("Logout");
-
-        this.accountItem = new JMenuItem("Account");
-        this.assessmentItem = new JMenuItem("Assessment");
-        this.attendanceItem = new JMenuItem("Attendance");
-        this.quizRoomItem = new JMenuItem("Quiz Room");
-        this.contactItem = new JMenuItem("Contact");
-
-        addMenuItemListener(homeItem, e -> {}, this::home);
-        addMenuItemListener(logoutItem, e -> {}, this::logout);
-        addMenuItemListener(accountItem, e -> {}, this::account);
-        addMenuItemListener(assessmentItem, e -> {}, this::assessment);
-        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
-        addMenuItemListener(quizRoomItem, e -> {}, this::quiz);
-        addMenuItemListener(contactItem, e -> {}, this::contact);
-
-        formatMenuItem(homeItem);
-        formatMenuItem(logoutItem);
-
-        formatMenuItem(accountItem);
-        formatMenuItem(assessmentItem);
-        formatMenuItem(attendanceItem);
-        formatMenuItem(quizRoomItem);
-        formatMenuItem(contactItem);
-
-        homeMenu.add(homeItem);
-        homeMenu.add(logoutItem);
-
-        menuMenu.add(accountItem);
-        menuMenu.add(assessmentItem);
-        menuMenu.add(attendanceItem);
-        menuMenu.add(quizRoomItem);
-        menuMenu.add(contactItem);
-
-        studentMenuBar.add(homeMenu);
-        studentMenuBar.add(menuMenu);
-        // Panel Color
-        Color backgroundColor = new Color(211,211,211);
+        // Panel Color and Background Color
+        Color panelColor = new Color(211,211,211);
+        Color backgroundColor = new Color(70,130,180);
 
         // Create panels for each button and set layout
-        JPanel announcementPanel = createPanel("Announcement", "Announcement.png", "Announcement", backgroundColor);
-        JPanel schedulePanel = createPanel("Schedule", "Schedule.png", "Schedule",backgroundColor);
-        JPanel materialPanel = createPanel("Course Material","Course Material.png", "Course Material", backgroundColor);
-        JPanel assignmentPanel = createPanel("Assignment", "Assignment.png", "Assignment", backgroundColor);
+        JPanel announcementPanel = createPanel("Announcement", "Announcement.png", "Announcement", panelColor);
+        JPanel schedulePanel = createPanel("Schedule", "Schedule.png", "Schedule",panelColor);
+        JPanel materialPanel = createPanel("Course Material","Course Material.png", "Course Material", panelColor);
+        JPanel assignmentPanel = createPanel("Assignment", "Assignment.png", "Assignment", panelColor);
 
         // Add panels to the main layout
         this.setLayout(new GridLayout(2, 2, 30, 30)); // Adjusted grid layout with reduced spacing
@@ -71,17 +30,14 @@ public  class StudentHomePage extends Page{
         this.add(materialPanel);
         this.add(assignmentPanel);
 
-        ImageIcon icon = createImageIcon("icon2.jpeg");
-        if (icon != null) {
-            this.setIconImage(icon.getImage());
-        }
-        this.getContentPane().setBackground(new Color(70,130,180));
-        this.setJMenuBar(studentMenuBar);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setVisible(true);
+        initializeHome();
+        this.getContentPane().setBackground(backgroundColor);
     }
     StudentHomePage(String title) {
         super(title, 211, 211, 211);
+        initializeHome();
+    }
+    private void initializeHome(){
         this.setTitle(title);
         this.studentMenuBar = new JMenuBar();
 
@@ -182,18 +138,6 @@ public  class StudentHomePage extends Page{
 
         return panel;
     }
-    void formatButton(JButton button) {
-        button.setFocusable(false);
-        button.setFont(new Font("Arial", Font.BOLD, 30));
-        button.setForeground(Color.WHITE);
-        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
-    }
-    private void formatMenuItem(JMenuItem menuItem) {
-        menuItem.setFont(new Font("Arial", Font.PLAIN, 16));
-        menuItem.setForeground(new Color(70, 130, 180));
-        menuItem.setBackground(Color.WHITE);
-        menuItem.setHorizontalAlignment(SwingConstants.LEADING);
-    }
     protected void home() {
         // Create a new instance of StudentHomePage
         new StudentHomePage();
@@ -224,7 +168,7 @@ public  class StudentHomePage extends Page{
         new StudentContactPage();
         this.dispose();
     }
-    void handleButtonClick(String buttonText) {
+    private void handleButtonClick(String buttonText) {
         switch (buttonText) {
             case "Announcement":
                 // Create and show a new instance of StudentAnnouncementPage
