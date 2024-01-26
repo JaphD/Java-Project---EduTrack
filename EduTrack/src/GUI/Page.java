@@ -4,9 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-
 abstract class Page extends JFrame {
     protected JFrame page;
     protected String title;
@@ -14,7 +13,7 @@ abstract class Page extends JFrame {
     protected JLabel imageLabel = createImageLabel();
     private int backgroundColorRed, backgroundColorGreen, backgroundColorBlue;
     private int width, height;
-    protected static final String ip = "10.6.154.233";
+    protected static final String ip = "192.168.6.64";
     protected GridBagConstraints constraints;
     Page(String title, int width, int height, int backgroundColorRed, int backgroundColorGreen, int backgroundColorBlue) {
         this.page = new JFrame(title);
@@ -76,7 +75,7 @@ abstract class Page extends JFrame {
         }
         return imageLabel;
     }
-    void addFormField(String labelText, JComponent field, int gridY) {
+    void addFormField(String labelText, JComponent field, String placeholder, int gridY) {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridy = gridY;
         constraints.gridx = 0;
@@ -87,6 +86,9 @@ abstract class Page extends JFrame {
 
         constraints.gridx = 1;
         constraints.insets = new Insets(5, 0, 5, 0); // Add spacing to the left
+
+        field.setToolTipText(placeholder);
+
         inputPanel.add(field, constraints);
     }
     protected boolean areNotNull(String username, String password) {
@@ -109,6 +111,14 @@ abstract class Page extends JFrame {
         menuItem.setForeground(new Color(70, 130, 180));
         menuItem.setBackground(Color.WHITE);
         menuItem.setHorizontalAlignment(SwingConstants.LEADING);
+    }
+    protected void navigateToPage(Class<?> pageClass) {
+        try {
+            pageClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+        this.dispose();
     }
     abstract void actionPerformed(ActionEvent e);
 }

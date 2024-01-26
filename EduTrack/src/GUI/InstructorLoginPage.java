@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class InstructorLoginPage extends Page implements ActionListener {
-
     private final JPasswordField securityKeyField;
     private final JPanel loginPanel, imagePanel, buttonPanel;
     private final JLabel loginLabel;
@@ -24,7 +23,7 @@ public class InstructorLoginPage extends Page implements ActionListener {
         // Create and configure the "Login" label
         Border border = BorderFactory.createEtchedBorder();
 
-        this.loginLabel = new JLabel("Instructor Login");
+        loginLabel = new JLabel("Instructor Login");
         loginLabel.setFont(new Font("Arial", Font.BOLD, 40));
         loginLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
         loginLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -34,11 +33,11 @@ public class InstructorLoginPage extends Page implements ActionListener {
         loginLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10))); // Add padding
 
         // Create a panel for the "Login" label and center it at the top
-        this.loginPanel = new JPanel(new BorderLayout());
+        loginPanel = new JPanel(new BorderLayout());
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
-        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel = new JPanel(new BorderLayout());
         imagePanel.add(imageLabel,BorderLayout.CENTER);
 
         // New Panel for login and image labels in the north
@@ -50,22 +49,21 @@ public class InstructorLoginPage extends Page implements ActionListener {
 
         inputPanel = new JPanel(new GridBagLayout());
 
-        addFormField("Username", usernameField = new JTextField(20),0);
-        addFormField("Password", passwordField = new JTextField(20),1);
-        addFormField("Security Key", securityKeyField = new JPasswordField(20),2);
+        addFormField("Username", usernameField = new JTextField(20),"Input your username",0);
+        addFormField("Password", passwordField = new JTextField(20),"Input your password",1);
+        addFormField("Security Key", securityKeyField = new JPasswordField(20),"Input your security key",2);
 
-        this.constraints = new GridBagConstraints();
+        constraints = new GridBagConstraints();
 
-
-        this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // Sign Up Button
-        this.signUpButton = new JButton("Sign Up");
+        signUpButton = new JButton("Sign Up");
         configureButton(signUpButton, 1,2,10,0,10,0);
         buttonPanel.add(signUpButton);
 
         // Login Button
-        this.loginButton = new JButton("Login");
+        loginButton = new JButton("Login");
         configureButton(loginButton, 2,2,10,10,0,0);
         buttonPanel.add(loginButton);
 
@@ -92,7 +90,7 @@ public class InstructorLoginPage extends Page implements ActionListener {
                 page.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
                 // Handle error opening StudentLoginPage
-                JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error opening Instructor Login: " + ex.getMessage());
             }
         }
         else if(e.getSource() == loginButton){
@@ -126,7 +124,7 @@ public class InstructorLoginPage extends Page implements ActionListener {
                         in.close();
                         socket.close();
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "An error has occurred please try again" + ex.getMessage());
+                        JOptionPane.showMessageDialog(this, "An error has occurred: " + ex.getMessage());
                     }
                 }
                 catch(Exception ex){

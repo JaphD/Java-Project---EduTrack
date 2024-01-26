@@ -5,15 +5,15 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.io.*;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentAccountPage extends StudentHomePage implements ActionListener {
     private JPanel profilePanel;
     private JLabel titleLabel, usernameLabel, passwordLabel;
-    private JTextField userNameField;
+    private JTextField old_PasswordField, new_PasswordField;
     private JPasswordField passwordField;
     private JButton editButton;
 
@@ -39,12 +39,8 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
 
         inputPanel = new JPanel(new GridBagLayout());
 
-        // Load data from the database
-        loadDataFromDatabase();
-
-        addFormField("Old Password", userNameField = new JTextField(20), 0);
-        addFormField("Old Password", passwordField = new JPasswordField(20), 1);
-        addFormField("New Password", passwordField = new JPasswordField(20), 2);
+        addFormField("Old Password", old_PasswordField = new JPasswordField(20), "Enter your old password",0);
+        addFormField("New Password", new_PasswordField = new JPasswordField(20), "Enter your new password",1);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -65,53 +61,64 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
         add(profilePanel, BorderLayout.NORTH);
         add(inputPanel, BorderLayout.CENTER);
     }
-
-    private void loadDataFromDatabase() {
-        try {
-            // Establish a database connection
-            Connection connection = DriverManager.getConnection("jdbc:mysql://your_database_url", "your_username", "your_password");
-
-            // SQL query to retrieve user data (modify as needed)
-            String query = "SELECT username, password FROM your_table WHERE user_id = ?";
-
-            // Assuming userId is the unique identifier for the user
-            int userId = getUserId(); // You need to implement this method to get the user's ID
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, userId);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // If a record is found, populate the fields
-            if (resultSet.next()) {
-                String username = resultSet.getString("username");
-                String password = resultSet.getString("password");
-
-                userNameField.setText(username);
-                passwordField.setText(password);
-            }
-
-            // Close resources
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading data from the database: " + e.getMessage());
-        }
-    }
-
-    // Implement the getUserId method to return the user's ID
-    private int getUserId() {
-        // Add logic to get the user's ID (you might pass it as a parameter or retrieve it from a session)
-        return 1; // Replace with the actual user ID
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Handle the edit button action here
+        List<String> validationErrors = null;
         if (e.getSource() == editButton) {
-            // Add your logic for handling the edit button click
-            JOptionPane.showMessageDialog(this, "Edited Successfully!");
+            String old_Password = old_PasswordField.getText();
+            String new_Password = new_PasswordField.getText();
+
+            validationErrors = isValidSignUpInput(new_Password);
+
+            if (validationErrors.isEmpty())
+                try {
+                    try {
+                        Socket socket = new Socket(ip, 500);
+                        OutputStream out = socket.getOutputStream();
+                        InputStream in = socket.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+                        // Send data in a structured format (e.g., JSON or CSV)
+                        String data = String.format("%s,%s\n", old_Password, new_Password);
+                        out.write(data.getBytes());
+
+                        String response = reader.readLine();
+                        System.out.println(response);
+
+                        if (response.equals("Updated")) {
+                            JOptionPane.showMessageDialog(this, "Account edited successfully!");
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Account has not been edited", "Warning", JOptionPane.WARNING_MESSAGE);
+                        }
+                        out.close();
+                        in.close();
+                        socket.close();
+
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
+                                "Warning", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (HeadlessException ex) {
+                    throw new RuntimeException(ex);
+                }
+        } else {
+            String errorMessage = "Not Valid Inputs:\n";
+            for (String error : validationErrors) {
+                errorMessage += "- " + error + "\n";
+            }
+            JOptionPane.showMessageDialog(null, errorMessage);
+        }
+    }
+    private java.util.List<String> isValidSignUpInput(String new_Password){
+        java.util.List<String> errors = new ArrayList<>();
+
+        validateField("Password", new_Password, "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$", "8-20 characters, with at least one uppercase letter, one lowercase letter, and one digit", errors);
+
+        return errors;
+    }
+    private void validateField(String fieldName, String value, String regex, String errorMessage, List<String> errors) {
+        if (!value.matches(regex)) {
+            errors.add(fieldName + " must be " + errorMessage);
         }
     }
 }

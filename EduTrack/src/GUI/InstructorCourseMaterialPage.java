@@ -5,7 +5,8 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.*;
+import java.net.Socket;
 
 public class InstructorCourseMaterialPage extends InstructorHomePage implements ActionListener {
     private final JLabel titleLabel;
@@ -74,13 +75,39 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
 
-                // TODO: Upload the file to the database (you need to implement this part)
-                // Example: uploadToDatabase(selectedFile);
-                JOptionPane.showMessageDialog(this, "File uploaded successfully");
+                // Update the server address and port
+                String serverAddress = "your_server_ip"; // Replace with the server's IP address
+                int serverPort = 1234;
+
+                try (Socket socket = new Socket(serverAddress, serverPort);
+                     OutputStream outputStream = socket.getOutputStream();
+                     DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+                     FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+
+                    // Send the file name to the server
+                    dataOutputStream.writeUTF(selectedFile.getName());
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+
+                    // Read the file data from the input stream and write it to the output stream
+                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+
+                    JOptionPane.showMessageDialog(this, "File uploaded successfully");
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error uploading file");
+                }
             }
         }
     }
 }
+
+
+
 
 
 

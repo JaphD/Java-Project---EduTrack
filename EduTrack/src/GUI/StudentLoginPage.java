@@ -12,10 +12,10 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class StudentLoginPage extends Page implements ActionListener {
-    private JPanel loginPanel, buttonPanel, imagePanel;
-    private JLabel loginLabel;
-    private JTextField usernameField, passwordField;
-    private JButton signUpButton, loginButton;
+    private final JPanel loginPanel, buttonPanel, imagePanel;
+    private final JLabel loginLabel;
+    private final JTextField usernameField, passwordField;
+    private final JButton signUpButton, loginButton;
 
     StudentLoginPage() {
         super("EduTrack - Student Login", 800, 700, 211, 211, 211);
@@ -23,7 +23,7 @@ public class StudentLoginPage extends Page implements ActionListener {
         // Create and configure the "Login" label
         Border border = BorderFactory.createEtchedBorder();
 
-        this.loginLabel = new JLabel("Student Login");
+        loginLabel = new JLabel("Student Login");
         loginLabel.setFont(new Font("Arial", Font.BOLD, 40));
         loginLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
         loginLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -34,18 +34,18 @@ public class StudentLoginPage extends Page implements ActionListener {
                 BorderFactory.createEmptyBorder(10, 10, 10, 10))); // Add padding
 
         // Create a panel for the "Login" label and center it at the top
-        this.loginPanel = new JPanel(new BorderLayout());
+        loginPanel = new JPanel(new BorderLayout());
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
 
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
-        this.imagePanel = new JPanel(new BorderLayout());
+        imagePanel = new JPanel(new BorderLayout());
         imagePanel.add(imageLabel,BorderLayout.CENTER);
 
         inputPanel = new JPanel(new GridBagLayout());
 
-        addFormField("Username", usernameField = new JTextField(20), 0);
-        addFormField("Password", passwordField = new JPasswordField(20), 1);
+        addFormField("Username", usernameField = new JTextField(20), "Input your username",0);
+        addFormField("Password", passwordField = new JPasswordField(20), "Input your password",1);
 
         // New Panel for login and image labels in the north
         JPanel centerPanel = new JPanel(new BorderLayout());
@@ -54,17 +54,17 @@ public class StudentLoginPage extends Page implements ActionListener {
         centerPanel.add(imagePanel, BorderLayout.NORTH);
         centerPanel.add(inputPanel,BorderLayout.CENTER);
 
-        this.buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        this.constraints = new GridBagConstraints();
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        constraints = new GridBagConstraints();
 
         // Sign Up Button
-        this.signUpButton = new JButton("Sign Up");
+        signUpButton = new JButton("Sign Up");
         configureButton(signUpButton, 1, 2, 10, 0, 10, 0);
         inputPanel.add(signUpButton,constraints);
         buttonPanel.add(signUpButton);
 
         // Login Button
-        this.loginButton = new JButton("Login");
+        loginButton = new JButton("Login");
         configureButton(loginButton, 2, 2, 10, 10, 0, 0);
         inputPanel.add(loginButton);
         buttonPanel.add(loginButton);
@@ -124,11 +124,11 @@ public class StudentLoginPage extends Page implements ActionListener {
                         socket.close();
                     }
                 catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "An error has occurred please try again" + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "An error has occurred: " + ex.getMessage());
                     }
                 }
             catch(Exception ex){
-                    JOptionPane.showMessageDialog(this, "Error opening Student Homepage");
+                    JOptionPane.showMessageDialog(this, "Error opening Student Homepage: " + ex.getMessage());
                 }
             }
             else {

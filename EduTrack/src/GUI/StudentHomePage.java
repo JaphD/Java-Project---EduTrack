@@ -100,7 +100,6 @@ public  class StudentHomePage extends Page{
             }
         });
     }
-
     private JPanel createPanel(String buttonText, String imagePath,String tooltipText, Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(backgroundColor);
@@ -138,35 +137,26 @@ public  class StudentHomePage extends Page{
 
         return panel;
     }
-    protected void home() {
-        // Create a new instance of StudentHomePage
-        new StudentHomePage();
-        this.dispose();
+    private void home() {
+        navigateToPage(StudentHomePage.class);
     }
-    protected void logout() {
-        new LoginPage();
-        this.dispose();
+    private void logout() {
+       navigateToPage(LoginPage.class);
     }
-    protected void account() {
-        new StudentAccountPage();
-        this.dispose();
+    private void account() {
+        navigateToPage(StudentAccountPage.class);
     }
     private void assessment() {
-        new StudentAssessmentPage();
-        this.dispose();
+        navigateToPage(StudentAssessmentPage.class);
     }
     private void attendance() {
-        new StudentAttendancePage();
-        this.dispose();
+        navigateToPage(StudentAssessmentPage.class);
     }
-
     private void quiz() {
-        new StudentQuizRoomPage();
-        this.dispose();
+        navigateToPage(StudentQuizRoomPage.class);
     }
     private void contact() {
-        new StudentContactPage();
-        this.dispose();
+        navigateToPage(StudentContactPage.class);
     }
     private void handleButtonClick(String buttonText) {
         switch (buttonText) {

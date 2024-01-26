@@ -7,16 +7,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class LoginPage extends Page implements ActionListener {
-    private JPanel loginPanel, imagePanel, loginImagePanel, centerPanel;
-    private JLabel loginLabel, imageLabel;
-    private JButton studentButton, instructorButton;
+    private final JPanel loginPanel, centerPanel;
+    private final JLabel loginLabel;
+    private final JButton studentButton, instructorButton;
     LoginPage() {
         super("EduTrack-Login", 650, 550, 211, 211, 211);
 
         // Create and configure the "Login" label
         Border border = BorderFactory.createEtchedBorder();
         // Create login label and giving it the desired format
-        this.loginLabel = new JLabel("Login");
+        loginLabel = new JLabel("Login");
         loginLabel.setFont(new Font("Arial", Font.BOLD, 40));
         loginLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
         loginLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -26,7 +26,7 @@ public class LoginPage extends Page implements ActionListener {
         loginLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10))); // Add padding
 
         // Create a panel for the "Login" label and center it at the top
-        this.loginPanel = new JPanel(new BorderLayout());
+        loginPanel = new JPanel(new BorderLayout());
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
@@ -73,7 +73,6 @@ public class LoginPage extends Page implements ActionListener {
                 new StudentLoginPage();
                 page.dispose(); // Close current window after opening new page
             } catch (Exception ex) {
-                // Handle error opening StudentLoginPage
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
             }
         } else if (e.getSource() == instructorButton) {
@@ -81,8 +80,7 @@ public class LoginPage extends Page implements ActionListener {
                 new InstructorLoginPage();
                 page.dispose();
             } catch(Exception ex){
-                // Add functionality for instructor button click (e.g., display message or open instructor login)
-                JOptionPane.showMessageDialog(this, "Instructor login not yet implemented.");
+                JOptionPane.showMessageDialog(this, "Error Opening Instructor Login: " + ex.getMessage());
             }
         }
     }

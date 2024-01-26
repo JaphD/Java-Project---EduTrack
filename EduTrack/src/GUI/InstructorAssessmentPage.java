@@ -76,7 +76,7 @@ public class InstructorAssessmentPage extends InstructorHomePage implements Acti
         label.setOpaque(true);
         return label;
     }
-
+    @Override
     void formatButton(JButton button) {
         button.setFont(new Font("Arial", Font.PLAIN, 20));
         button.setForeground(new Color(255, 255, 255));

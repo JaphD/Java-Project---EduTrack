@@ -76,7 +76,7 @@ public class StudentAssignmentPage extends StudentHomePage implements ActionList
         label.setOpaque(true);
         return label;
     }
-
+    @Override
     void formatButton(JButton button) {
         button.setFont(new Font("Arial", Font.PLAIN, 20));
         button.setForeground(new Color(255, 255, 255));

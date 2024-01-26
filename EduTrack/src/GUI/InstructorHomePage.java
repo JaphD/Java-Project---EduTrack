@@ -48,7 +48,6 @@ public class InstructorHomePage extends Page{
         JMenuItem attendanceItem = new JMenuItem("Attendance");
         JMenuItem scheduleItem = new JMenuItem("Schedule");
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
-        JMenuItem contactItem = new JMenuItem("Contact");
 
         addMenuItemListener(homeItem, e -> {}, this::home);
         addMenuItemListener(logoutItem, e -> {}, this::logout);
@@ -56,27 +55,14 @@ public class InstructorHomePage extends Page{
         addMenuItemListener(assessmentItem, e -> {}, this::assessment);
         addMenuItemListener(attendanceItem, e -> {}, this::attendance);
         addMenuItemListener(scheduleItem, e -> {}, this::schedule);
-        addMenuItemListener(contactItem, e -> {}, this::contact);
 
-        formatMenuItem(homeItem);
-        formatMenuItem(logoutItem);
+        formatMenuItem(homeItem); formatMenuItem(logoutItem);
 
-        formatMenuItem(accountItem);
-        formatMenuItem(assessmentItem);
-        formatMenuItem(attendanceItem);
-        formatMenuItem(scheduleItem);
-        formatMenuItem(quizRoomItem);
-        formatMenuItem(contactItem);
+        formatMenuItem(accountItem); formatMenuItem(assessmentItem); formatMenuItem(attendanceItem); formatMenuItem(scheduleItem); formatMenuItem(quizRoomItem);
 
-        homeMenu.add(homeItem);
-        homeMenu.add(logoutItem);
+        homeMenu.add(homeItem); homeMenu.add(logoutItem);
 
-        menuMenu.add(accountItem);
-        menuMenu.add(assessmentItem);
-        menuMenu.add(attendanceItem);
-        menuMenu.add(scheduleItem);
-        menuMenu.add(quizRoomItem);
-        menuMenu.add(contactItem);
+        menuMenu.add(accountItem); menuMenu.add(assessmentItem); menuMenu.add(attendanceItem); menuMenu.add(scheduleItem); menuMenu.add(quizRoomItem);
 
         instructorMenuBar.add(homeMenu);
         instructorMenuBar.add(menuMenu);
@@ -137,32 +123,22 @@ public class InstructorHomePage extends Page{
         return panel;
     }
     private void home(){
-        new InstructorHomePage();
-        this.dispose();
+        navigateToPage(InstructorHomePage.class);
     }
     private void logout() {
-        new LoginPage();
-        this.dispose();
+        navigateToPage(LoginPage.class);
     }
     private void account(){
-        new InstructorAccountPage();
-        this.dispose();
+        navigateToPage(InstructorAccountPage.class);
     }
     private void assessment(){
-        new InstructorAssessmentPage();
-        this.dispose();
+        navigateToPage(InstructorAssessmentPage.class);
     }
     private void attendance(){
-        new InstructorAttendancePage();
-        this.dispose();
+        navigateToPage(InstructorAttendancePage.class);
     }
     private void schedule(){
-        new InstructorSchedulePage();
-        this.dispose();
-    }
-    private void contact(){
-        new InstructorContactPage();
-        this.dispose();
+        navigateToPage(InstructorSchedulePage.class);
     }
     void handleButtonClick(String buttonText) {
         switch (buttonText) {

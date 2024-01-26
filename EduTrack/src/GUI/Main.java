@@ -1,11 +1,13 @@
 package GUI;
 
+import javax.swing.*;
+
 public class Main {
     public static void main(String[] args) {
-        //new LoginPage();
-        //new InstructorHomePage();
-        //new StudentHomePage();
-
+        SwingUtilities.invokeLater(() -> {
+            new LoginPage();
+            //new InstructorHomePage();
+            //new StudentHomePage();
+        });
     }
-
 }

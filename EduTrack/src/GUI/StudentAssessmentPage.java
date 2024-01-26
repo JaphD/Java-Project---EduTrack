@@ -34,18 +34,15 @@ public class StudentAssessmentPage extends StudentHomePage implements ActionList
         titlePanel.setPreferredSize(new Dimension(0, 80));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Sample course configurations
-        String[] courses = {"Course A", "Course B", "Course C"};
+        // Create table model with no data
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("Assessment Type");
+        tableModel.addColumn("Score");
+        tableModel.addColumn("Grade");
 
-        // Create course dropdown
-        courseDropdown = new JComboBox<>(courses);
-        formatComboBox(courseDropdown);
-        courseDropdown.addActionListener(this);
-
-        // Create table
-        String[] columnNames = {"Assessment Type", "Score", "Letter Grade"};
-        tableModel = new DefaultTableModel(null, columnNames);
+        // Create the JTable with the model
         assessmentTable = new JTable(tableModel);
+        formatTable(assessmentTable);
 
         // Set row height and column widths
         assessmentTable.setRowHeight(30);
@@ -57,11 +54,8 @@ public class StudentAssessmentPage extends StudentHomePage implements ActionList
         cellRenderer.setFont(new Font("Arial", Font.PLAIN, 30));
         assessmentTable.setDefaultRenderer(Object.class, cellRenderer);
 
-        // Sample course configurations (you will replace this with data from the database)
-        String[] course = fetchCourseNamesFromDatabase();
-
         // Create course dropdown
-        courseDropdown = new JComboBox<>(courses);
+        courseDropdown = new JComboBox<>();
         formatComboBox(courseDropdown);
         courseDropdown.addActionListener(this);
 
@@ -79,32 +73,47 @@ public class StudentAssessmentPage extends StudentHomePage implements ActionList
 
         add(topPanel, BorderLayout.NORTH);
         add(new JScrollPane(assessmentTable), BorderLayout.CENTER);
+
+        // Fetch and populate course names from the database
+        populateCourseDropdown();
     }
-    // Fetch course names from the database
+
+    private void populateCourseDropdown() {
+        // Fetch course names from the database
+        String[] courseNames = fetchCourseNamesFromDatabase();
+
+        // Add course names to the dropdown
+        for (String courseName : courseNames) {
+            courseDropdown.addItem(courseName);
+        }
+
+        // Set default selection (if any)
+        if (courseNames.length > 0) {
+            courseDropdown.setSelectedIndex(0);
+            // Update table based on the selected course
+            updateTable(courseNames[0]);
+        }
+    }
+
     private String[] fetchCourseNamesFromDatabase() {
         List<String> courseList = new ArrayList<>();
 
         try {
             // Establish a database connection
-            Connection connection = DriverManager.getConnection("jdbc:mysql://your_database_url", "your_username", "your_password");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://instructorform", "your_username", "your_password");
 
             // SQL query to retrieve course names
             String query = "SELECT course_name FROM your_course_table"; // Replace with your actual table name
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Add course names to the list
-            while (resultSet.next()) {
-                String courseName = resultSet.getString("course_name");
-                courseList.add(courseName);
+                // Add course names to the list
+                while (resultSet.next()) {
+                    String courseName = resultSet.getString("course_name");
+                    courseList.add(courseName);
+                }
             }
-
-            // Close resources
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error fetching course names from the database: " + e.getMessage());
@@ -121,25 +130,76 @@ public class StudentAssessmentPage extends StudentHomePage implements ActionList
         }
     }
     private void updateTable(String selectedCourse) {
-        // For simplicity, clear the table and add dummy data
+        // Clear the table
         clearTable();
 
-        if (selectedCourse.equals("Course A")) {
-            addRow("Assessment", 45, calculateGrade(45));
-            addRow("Final Exam", 35, calculateGrade(35));
-        } else if (selectedCourse.equals("Course B")) {
-            addRow("Assessment", 40, calculateGrade(40));
-            addRow("Final Exam", 38, calculateGrade(38));
-        } else if (selectedCourse.equals("Course C")) {
-            addRow("Assessment", 48, calculateGrade(48));
-            addRow("Final Exam", 42, calculateGrade(42));
+        // Fetch assessment data for the selected course from the database
+        List<AssessmentData> assessmentDataList = fetchAssessmentDataFromDatabase(selectedCourse);
+
+        // Add fetched data to the table
+        for (AssessmentData assessmentData : assessmentDataList) {
+            addRow(assessmentData.getAssessmentType(), assessmentData.getScore(), assessmentData.getGrade());
         }
     }
+    private List<AssessmentData> fetchAssessmentDataFromDatabase(String selectedCourse) {
+        List<AssessmentData> assessmentDataList = new ArrayList<>();
+
+        try {
+            // Establish a database connection
+            Connection connection = DriverManager.getConnection("jdbc:mysql://instructorform", "your_username", "your_password");
+
+            // SQL query to retrieve assessment data based on the selected course
+            String query = "SELECT assessment_type, score, grade FROM your_assessment_table WHERE course_name = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, selectedCourse);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    // Add assessment data to the list
+                    while (resultSet.next()) {
+                        String assessmentType = resultSet.getString("assessment_type");
+                        int score = resultSet.getInt("score");
+                        String grade = resultSet.getString("grade");
+
+                        assessmentDataList.add(new AssessmentData(assessmentType, score, grade));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error fetching assessment data from the database: " + e.getMessage());
+        }
+        return assessmentDataList;
+    }
+
     private void addRow(String assessmentType, int score, String letterGrade) {
         tableModel.addRow(new Object[]{assessmentType, score, letterGrade});
     }
+
     private void clearTable() {
         tableModel.setRowCount(0);
+    }
+
+    private class AssessmentData {
+        private final String assessmentType;
+        private final int score;
+        private final String grade;
+        public AssessmentData(String assessmentType, int score, String grade) {
+            this.assessmentType = assessmentType;
+            this.score = score;
+            this.grade = grade;
+        }
+        public String getAssessmentType() {
+            return assessmentType;
+        }
+        public int getScore() {
+            return score;
+        }
+        public String getGrade() {
+            return grade;
+        }
+    }
+    private void formatTable(JTable table) {
+        // Your formatting code for JTable goes here
     }
     private JLabel formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
@@ -154,20 +214,5 @@ public class StudentAssessmentPage extends StudentHomePage implements ActionList
         comboBox.setFont(new Font("Arial", Font.PLAIN, 20));
         comboBox.setForeground(new Color(70, 130, 180));
         return comboBox;
-    }
-    private String calculateGrade(int score) {
-        switch (score / 10) {
-            case 10:
-            case 9:
-                return "A+";
-            case 8:
-                return "A";
-            case 7:
-                return "A-";
-            case 6:
-                return "B+";
-            default:
-                return "B";
-        }
     }
 }

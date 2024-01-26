@@ -24,7 +24,6 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
     private DefaultListModel<String> fileListModel;
     private JList<String> fileList;
     private JButton downloadButton;
-
     public StudentCourseMaterialPage() {
         super("EduTrack - Course Material");
 
@@ -75,7 +74,6 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
         this.add(downloadButton, BorderLayout.SOUTH);
         this.setVisible(true);
     }
-
     private Component formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
         label.setForeground(new Color(70, 130, 180));
@@ -85,12 +83,10 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
         label.setOpaque(true);
         return label;
     }
-
     private void formatComboBox(JComboBox<String> comboBox) {
         comboBox.setFont(new Font("Arial", Font.PLAIN, 20));
         comboBox.setForeground(new Color(70, 130, 180));
     }
-
     @Override
     void formatButton(JButton button) {
         button.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -98,14 +94,12 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
         button.setBackground(new Color(70, 130, 180));
         button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     }
-
     private Connection establishConnection() throws SQLException {
         String url = "jdbc:mysql://your-database-url";
         String user = "your-username";
         String password = "your-password";
         return DriverManager.getConnection(url, user, password);
     }
-
     private void loadFiles(String selectedCourse) {
         fileListModel.clear();
         downloadButton.setEnabled(false);
@@ -121,12 +115,14 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
                         fileListModel.addElement(fileName);
                     }
                 }
+
+                // Enable the download button since files are loaded
+                downloadButton.setEnabled(true);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
     private void downloadFile(String selectedFile) {
         try (Connection connection = establishConnection()) {
             String query = "SELECT file_data FROM course_material WHERE file_name = ?";
@@ -154,7 +150,6 @@ public class StudentCourseMaterialPage extends StudentHomePage implements Action
             JOptionPane.showMessageDialog(this, "Error downloading file: " + e.getMessage());
         }
     }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == courseDropdown) {

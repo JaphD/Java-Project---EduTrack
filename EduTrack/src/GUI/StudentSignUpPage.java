@@ -5,17 +5,18 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentSignUpPage extends Page implements ActionListener {
     private JLabel signUpLabel;
     private JTextField firstNameField, lastNameField, userNameField, idNumberField, emailField, passwordField;
     private JPanel signUpPanel, imagePanel;
     private JButton signUpButton;
+    protected String email;
+
     StudentSignUpPage() {
         super("EduTrack - Student Sign Up", 800, 700, 211, 211, 211);
 
@@ -47,12 +48,12 @@ public class StudentSignUpPage extends Page implements ActionListener {
 
         this.inputPanel = new JPanel(new GridBagLayout());
 
-        addFormField("First name", firstNameField = new JTextField(20), 0);
-        addFormField("Last name", lastNameField = new JTextField(20), 1);
-        addFormField("Username", userNameField = new JTextField(20), 2);
-        addFormField("ID Number", idNumberField = new JTextField(20), 3);
-        addFormField("Email", emailField = new JTextField(20), 4);
-        addFormField("Password", passwordField = new JPasswordField(20), 5);
+        addFormField("First name", firstNameField = new JTextField(20), "Enter your first name (3-20 characters, only letters)",0);
+        addFormField("Last name", lastNameField = new JTextField(20), "Enter your last name (3-20 characters, only letters)",1);
+        addFormField("Username", userNameField = new JTextField(20), "Enter your username (3-20 characters, letters and numbers)",2);
+        addFormField("ID Number", idNumberField = new JTextField(20), "Enter your ID number (11 characters, letters, numbers, and '/')",3);
+        addFormField("Email", emailField = new JTextField(20), "Enter your email (e.g., user@example.com)",4);
+        addFormField("Password", passwordField = new JPasswordField(20), "Enter your password (8-20 characters, at least one lowercase letter, one uppercase letter, and one digit)",5);
 
         this.constraints = new GridBagConstraints();
 
@@ -65,6 +66,9 @@ public class StudentSignUpPage extends Page implements ActionListener {
         page.add(inputPanel, BorderLayout.CENTER);
         page.setVisible(true);
     }
+    StudentSignUpPage(String title){
+        super(title, 800,700,211,211,211);
+    }
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 18));
@@ -74,6 +78,13 @@ public class StudentSignUpPage extends Page implements ActionListener {
         constraints.gridy = gridy;
         constraints.gridx = gridx;
         constraints.insets = new Insets(top,left, bottom, right); // Add some spacing below the last text field
+    }
+    private void saveEmailToFile(String email) {
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("email.txt"))) {
+            dos.writeUTF(email);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -85,23 +96,41 @@ public class StudentSignUpPage extends Page implements ActionListener {
             String email = emailField.getText();
             String password = passwordField.getText();
 
-            if (isValidSignUpInput(firstName, lastName, username, idNumber, email, password)) {
+            List<String> validationErrors = isValidSignUpInput(firstName, lastName, username, idNumber, email, password);
+
+            if (validationErrors.isEmpty()) {
                 try {
                     try {
-                        Socket socket = new Socket(ip, 656); // Replace with server address and port
+                        Socket socket = new Socket(ip, 456); // Replace with server address and port
                         OutputStream out = socket.getOutputStream();
                         InputStream in = socket.getInputStream();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
-
                         // Send data in a structured format (e.g., JSON or CSV)
-                        String data = String.format("%s,%s,%s,%s,%s\n", firstName, lastName, username, idNumber, email, password);
+                        String data = String.format("%s,%s,%s,%s,%s,%s\n", firstName, lastName, username, idNumber, email, password);
                         out.write(data.getBytes());
 
                         String response = reader.readLine();
 
                         if (response.equals("Success")) {
-                            JOptionPane.showMessageDialog(this, "Sign Up Successful!");
+                            try (Socket socket1 = new Socket(ip, 358);
+                                 OutputStream Out = socket1.getOutputStream();
+                                 InputStream In = socket1.getInputStream();
+                                 BufferedReader Reader = new BufferedReader(new InputStreamReader(In))) {
+                                saveEmailToFile(email);
+
+                                String send = "12";
+                                String data1 = String.format("%s,%s\n", send, email);
+                                Out.write(data1.getBytes());
+                                String response3 = Reader.readLine();
+                                if ("Sent".equals(response3)) {
+                                    JOptionPane.showMessageDialog(this, "The verification code sent to the email!");
+                                    new StudentVerificationPage(); // Pass email to verification page
+                                    page.dispose();
+                                } else {
+                                    JOptionPane.showMessageDialog(this, "Error. Verification code not be sent to the email!");
+                                }
+                            }
                         } else{
                             JOptionPane.showMessageDialog(this, "Sign Up Failed. Please try again.");
                         }
@@ -109,29 +138,39 @@ public class StudentSignUpPage extends Page implements ActionListener {
                         in.close();
                         socket.close();
 
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null,"An error has occurred please try again");
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
+                                "Warning", JOptionPane.WARNING_MESSAGE);
                     }
-                    new StudentVerificationPage();
-                    page.dispose();
                 }
-                catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error signing Up" + ex.getMessage());
+                catch (HeadlessException ex) {
+                    throw new RuntimeException(ex);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Not Valid Inputs!");
+                String errorMessage = "Not Valid Inputs:\n";
+                for (String error : validationErrors) {
+                    errorMessage += "- " + error + "\n";
+                }
+                JOptionPane.showMessageDialog(null, errorMessage);
             }
         }
     }
-    private boolean isValidSignUpInput(String firstname, String lastname, String username, String idNumber, String email, String password){
-        String firstNameRegex = "^[a-zA-Z]{3,20}$";
-        String lastNameRegex = "^[a-zA-Z]{3,20}$";
-        String usernameRegex = "^[a-zA-Z0-9]{3,20}$";
-        String idNumberRegex = "^[a-zA-Z0-9/]{11}$";
-        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
+    private List<String> isValidSignUpInput(String firstname, String lastname, String username, String idNumber, String email, String password){
+        List<String> errors = new ArrayList<>();
 
-        return firstname.matches(firstNameRegex) && lastname.matches(lastNameRegex) && username.matches(usernameRegex) && idNumber.matches(idNumberRegex) && email.matches(emailRegex) && password.matches(passwordRegex);
+        validateField("First Name", firstname, "^[a-zA-Z]{3,20}$", "3-20 characters of letters only", errors);
+        validateField("Last Name", lastname, "^[a-zA-Z]{3,20}$", "3-20 characters of letters only", errors);
+        validateField("Username", username, "^[a-zA-Z0-9]{3,20}$", "3-20 characters of letters and numbers only", errors);
+        validateField("ID Number", idNumber, "^[a-zA-Z0-9/]{11}", "11 characters of letters,digits and forward slash", errors);
+        validateField("Email", email, "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$", "Invalid Email Address", errors);
+        validateField("Password", password, "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$", "8-20 characters, with at least one uppercase letter, one lowercase letter, and one digit", errors);
+
+        return errors;
+    }
+    private void validateField(String fieldName, String value, String regex, String errorMessage, List<String> errors) {
+        if (!value.matches(regex)) {
+            errors.add(fieldName + " must be " + errorMessage);
+        }
     }
 }
 

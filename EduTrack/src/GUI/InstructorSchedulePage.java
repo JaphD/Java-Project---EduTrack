@@ -13,7 +13,6 @@ public class InstructorSchedulePage extends InstructorHomePage implements Action
     private JTextField dayField;
     private JTextField timeField;
     private JButton submitButton;
-
     public InstructorSchedulePage() {
         super("Course Schedule");
         initializeComponents();
@@ -80,7 +79,7 @@ public class InstructorSchedulePage extends InstructorHomePage implements Action
         label.setFont(new Font("Arial", Font.BOLD, 20));
         label.setForeground(new Color(70, 130, 180));
     }
-
+    @Override
     void formatButton(JButton button) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 15));
