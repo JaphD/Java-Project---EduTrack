@@ -10,29 +10,28 @@ import java.net.Socket;
 import java.util.List;
 import java.util.ArrayList;
 
-public class InstructorSignUpPage extends Page implements ActionListener {
-    private JLabel signUpLabel;
-    private JPanel imagePanel;
+public class
+InstructorSignUpPage extends Page implements ActionListener {
+    private final JLabel signUpLabel;
+    private final JPanel imagePanel;
     private JTextField firstNameField, lastNameField, userNameField, departmentField, courseField, emailField, passwordField, securityKeyField;
-    private JPanel signUpPanel;
-    private JButton signUpButton;
-    protected String email;
+    private final JPanel signUpPanel, backPanel;
+    private final JButton signUpButton, backButton;
     InstructorSignUpPage() {
-        super("EduTrack - Instructor Sign Up", 800, 700, 211, 211, 211);
+        super("EduTrack - Instructor Sign Up", true, 800, 700, 211, 211, 211);
 
-        // Create and configure the "Sign Up" label
         Border border = BorderFactory.createEtchedBorder();
 
         this.signUpLabel = new JLabel("Instructor Sign Up");
         signUpLabel.setFont(new Font("Arial", Font.BOLD, 40));
-        signUpLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
+        signUpLabel.setForeground(new Color(70, 130, 180)); // Sets color to a shade of blue
         signUpLabel.setHorizontalAlignment(JLabel.CENTER);
         signUpLabel.setVerticalAlignment(JLabel.CENTER);
         signUpLabel.setBackground(Color.white);
         signUpLabel.setOpaque(true);
         signUpLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10))); // Add padding
 
-        // Create a panel for the "Sign Up" label and center it at the top
+        // Creates a panel for the "Sign Up" label and center it at the top
         this.signUpPanel = new JPanel(new BorderLayout());
         signUpPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
         signUpPanel.add(signUpLabel, BorderLayout.CENTER);
@@ -58,29 +57,39 @@ public class InstructorSignUpPage extends Page implements ActionListener {
         addFormField("Email", emailField = new JTextField(20), "Enter your email (e.g., user@example.com)",5);
         addFormField("Password", passwordField = new JPasswordField(20), "Enter your password (8-20 characters, at least one lowercase letter, one uppercase letter, and one digit)",6);
 
-        this.constraints = new GridBagConstraints();
+        constraints = new GridBagConstraints();
 
         // Sign Up Button
-        this.signUpButton = new JButton("Sign Up");
+        signUpButton = new JButton("Sign Up");
         configureButton(signUpButton, 1,8,10,0,10,0);
         inputPanel.add(signUpButton, constraints);
 
+        // Back Panel
+        backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Back Button
+        backButton = new JButton("Back");
+        configureButton(backButton, 1, 2, 10, 0, 10, 0);
+        backPanel.add(backButton);
+
         page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
+        page.add(backPanel, BorderLayout.SOUTH);
         page.setVisible(true);
     }
-    InstructorSignUpPage(String title){
+   /* InstructorSignUpPage(String title){
         super(title,800,700,211,211,211);
     }
+    */
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 18));
         button.setForeground(Color.white);
-        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
+        button.setBackground(new Color(70, 130, 180)); // Sets color to a shade of blue
         button.addActionListener(this);
         constraints.gridy = gridy;
         constraints.gridx = gridx;
-        constraints.insets = new Insets(top,left, bottom, right); // Add some spacing below the last text field
+        constraints.insets = new Insets(top,left, bottom, right); // Adds some spacing below the last text field
     }
     public void setEmail(String email) {
         this.email = email;
@@ -105,65 +114,62 @@ public class InstructorSignUpPage extends Page implements ActionListener {
             String email = emailField.getText();
             String password = passwordField.getText();
 
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             List<String> validationErrors = isValidSignUpInput(firstName, lastName, username, department, course, email, password);
 
             if (validationErrors.isEmpty()) {
-                try {
-                    try {
-                        Socket socket = new Socket(ip, 456); // Replace with server address and port
-                        OutputStream out = socket.getOutputStream();
-                        InputStream in = socket.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                try (Socket socket = new Socket(ip, 100);
+                     OutputStream out = socket.getOutputStream();
+                     InputStream in = socket.getInputStream();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                    String data = String.format("%s,%s,%s,%s,%s,%s,%s\n", firstName, lastName, username, department, course, email, password);
+                    out.write(data.getBytes());
 
-                        // Send data in a structured format (e.g., CSV)
-                        String data = String.format("%s,%s,%s,%s,%s,%s,%s\n", firstName, lastName, username, department, course, email, password);
-                        out.write(data.getBytes());
-
-                        String response = reader.readLine();
-                        if ("Success".equals(response)) {
-                            try (Socket socket1 = new Socket(ip, 357);
-                                 OutputStream Out = socket1.getOutputStream();
-                                 InputStream In = socket1.getInputStream();
-                                 BufferedReader Reader = new BufferedReader(new InputStreamReader(In))) {
-                                saveEmailToFile(email);
-
-                                String send = "12";
-                                String data1 = String.format("%s,%s\n", send, email);
-                                Out.write(data1.getBytes());
-                                String response3 = Reader.readLine();
-                                if ("Sent".equals(response3)) {
-                                    JOptionPane.showMessageDialog(this, "The verification code sent to the email!");
-                                    new InstructorVerificationPage(); // Pass email to verification page
-                                    page.dispose();
-                                } else {
-                                    JOptionPane.showMessageDialog(this, "Error. Verification code not be sent to the email!");
-                                }
+                    String response = reader.readLine();
+                    if ("Success".equals(response)) {
+                        try (Socket socket1 = new Socket(ip, 200);
+                             OutputStream Out = socket1.getOutputStream();
+                             InputStream In = socket1.getInputStream();
+                             BufferedReader Reader = new BufferedReader(new InputStreamReader(In))) {
+                            saveEmailToFile(email);
+                            String data1 = String.format("%s\n", email);
+                            Out.write(data1.getBytes());
+                            String response3 = Reader.readLine();
+                            if ("VerificationCodeSent".equals(response3)) {
+                                JOptionPane.showMessageDialog(this, "The verification code sent to the email!");
+                                new InstructorVerificationPage(); // Pass email to verification page
+                                page.dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(this, "Error. Verification code not be sent to the email!");
                             }
                         }
-                        else {
-                            JOptionPane.showMessageDialog(this, "Sign up Failed. Please try again");
-                        }
-                        out.close();
-                        in.close();
-                        socket.close();
-
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
-                                "Warning", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Sign up Failed. Please try again");
                     }
-                } catch (HeadlessException ex) {
-                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
+                            "Warning", JOptionPane.WARNING_MESSAGE);
                 }
-            }
-            else{
+            } else {
                 String errorMessage = "Not Valid Inputs:\n";
                 for (String error : validationErrors) {
                     errorMessage += "- " + error + "\n";
                 }
                 JOptionPane.showMessageDialog(null, errorMessage);
             }
+            // Reset the cursor
+            setCursor(Cursor.getDefaultCursor());
+        } else if (e.getSource() == backButton) {
+            try {
+                new InstructorLoginPage();
+                page.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
+            }
         }
     }
+
     private List<String> isValidSignUpInput(String firstname, String lastname, String username, String department, String course, String email, String password) {
         List<String> errors = new ArrayList<>();
 

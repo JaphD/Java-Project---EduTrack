@@ -8,21 +8,20 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 
-public class StudentVerificationPage extends StudentSignUpPage implements ActionListener {
+public class StudentVerificationPage extends Page implements ActionListener {
     private final JLabel verificationLabel;
     private final JPanel verificationPanel;
     private final JTextField verificationField;
     private final JButton submitButton;
 
     StudentVerificationPage() {
-        super("Student Verification Page");
+        super("EduTrack - Student Verification", true, 800,700,211,211,211);
 
-        // Create and configure the "Verification" label
         Border border = BorderFactory.createEtchedBorder();
 
         this.verificationLabel = new JLabel("Student Sign Up");
         verificationLabel.setFont(new Font("Arial", Font.BOLD, 40));
-        verificationLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
+        verificationLabel.setForeground(new Color(70, 130, 180)); // Sets color to a shade of blue
         verificationLabel.setHorizontalAlignment(JLabel.CENTER);
         verificationLabel.setVerticalAlignment(JLabel.CENTER);
         verificationLabel.setBackground(Color.white);
@@ -64,26 +63,26 @@ public class StudentVerificationPage extends StudentSignUpPage implements Action
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 25));
         button.setForeground(Color.white);
-        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
+        button.setBackground(new Color(70, 130, 180)); // Sets color to a shade of blue
         button.addActionListener(this);
         constraints.gridy = gridy;
         constraints.gridx = gridx;
-        constraints.insets = new Insets(top,left, bottom, right); // Add some spacing below the last text field
+        constraints.insets = new Insets(top,left, bottom, right); // Adds some spacing below the last text field
     }
     @Override
     public void actionPerformed(ActionEvent e) {
         String verificationNumber=verificationField.getText();
         System.out.println("the email value"+ savedEmail);
-        String send="Correct";
+
         if (e.getSource() == submitButton) {
-            try (Socket socket = new Socket(ip, 358);
+            try (Socket socket = new Socket(ip, 150);
                  BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                  OutputStream out = socket.getOutputStream()) {
-                String data2 = String.format("%s,%s,%s\n",savedEmail,verificationNumber,send);
+                String data2 = String.format("%s,%s\n",savedEmail,verificationNumber);
                 out.write(data2.getBytes());
-                String responseVR= in.readLine();// Print server response
+                String responseVR= in.readLine();
                 System.out.println(responseVR);
-                if(("23").equals(responseVR)){
+                if(("SignUpVerified").equals(responseVR)){
                     JOptionPane.showMessageDialog(this, "Sign up successful");
                     new StudentLoginPage();
                     page.dispose();

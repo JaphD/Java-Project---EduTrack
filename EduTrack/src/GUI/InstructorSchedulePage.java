@@ -1,126 +1,113 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.net.Socket;
+
 public class InstructorSchedulePage extends InstructorHomePage implements ActionListener {
-    private JTextField courseNameField;
-    private JTextField dayField;
-    private JTextField timeField;
-    private JButton submitButton;
-    public InstructorSchedulePage() {
-        super("Course Schedule");
-        initializeComponents();
-        addComponentsToFrame();
+    private final JLabel titleLabel;
+    private final JPanel titlePanel;
+    private final JButton uploadButton;
+    private final JFileChooser fileChooser;
+    InstructorSchedulePage(){
+    super("EduTrack - Instructor Schedule");
+
+    Border border = BorderFactory.createEtchedBorder();
+
+    // Title Label
+        this.titleLabel = new JLabel("Schedule Document");
+        formatLabel(titleLabel);
+        titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+
+    // Title Panel
+        this.titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setPreferredSize(new Dimension(0, 80));
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
+
+    // Upload Button
+        uploadButton = new JButton("Upload Schedule");
+        formatSmallButton(uploadButton);
+        uploadButton.addActionListener(this);
+
+    // Set up layout
+        setLayout(new BorderLayout());
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(titlePanel, BorderLayout.NORTH);
+
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        centerPanel.add(uploadButton);
+
+        topPanel.add(centerPanel, BorderLayout.CENTER);
+
+        add(topPanel, BorderLayout.NORTH);
+
+        setVisible(true);
+
+        // File chooser initialization
+        fileChooser = new JFileChooser();
     }
-    private void initializeComponents() {
-        courseNameField = new JTextField(8); // Reduced text field size
-        dayField = new JTextField(8); // Reduced text field size
-        timeField = new JTextField(8); // Reduced text field size
-        submitButton = new JButton("Submit");
-        formatButton(submitButton);
-        submitButton.addActionListener(this);
-    }
-    private void addComponentsToFrame() {
-        // Title Panel
-        JPanel titlePanel = new JPanel();
-        JLabel titleLabel = new JLabel("Schedule");
-        formatTitleLabel(titleLabel);
-        titlePanel.add(titleLabel);
-
-        // Input Panel
-        JPanel inputPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5); // Adjusted insets for spacing
-
-        JLabel courseLabel = new JLabel("Course Name:");
-        formatLabel(courseLabel);
-        JLabel dayLabel = new JLabel("Day:");
-        formatLabel(dayLabel);
-        JLabel timeLabel = new JLabel("Time:");
-        formatLabel(timeLabel);
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        inputPanel.add(courseLabel, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        inputPanel.add(courseNameField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        inputPanel.add(dayLabel, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        inputPanel.add(dayField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        inputPanel.add(timeLabel, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        inputPanel.add(timeField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        inputPanel.add(submitButton, gbc);
-
-        add(titlePanel, BorderLayout.NORTH);
-        add(inputPanel, BorderLayout.CENTER);
-    }
-    private void formatTitleLabel(JLabel label) {
+    /*
+    private Component formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
         label.setForeground(new Color(70, 130, 180));
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setAlignmentY(JLabel.CENTER);
+        label.setBackground(Color.white);
+        label.setOpaque(true);
+        return label;
     }
-    private void formatLabel(JLabel label) {
-        label.setFont(new Font("Arial", Font.BOLD, 20));
-        label.setForeground(new Color(70, 130, 180));
-    }
-    @Override
-    void formatButton(JButton button) {
-        button.setFocusable(false);
-        button.setFont(new Font("Arial", Font.BOLD, 15));
-        button.setForeground(Color.white);
+
+     */
+    /*
+    private void formatSmallButton(JButton button) {
+        button.setFont(new Font("Arial", Font.PLAIN, 25)); // Changed font size
+        button.setForeground(new Color(255, 255, 255));
         button.setBackground(new Color(70, 130, 180));
-        button.setPreferredSize(new Dimension(100, 30));
+        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Adjusted padding
+        button.setFocusable(false);
     }
+
+     */
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
-            String courseName = courseNameField.getText();
-            String day = dayField.getText();
-            String time = timeField.getText();
+        if (e.getSource() == uploadButton) {
+            int result = fileChooser.showOpenDialog(this);
 
-            if (!courseName.isEmpty() && !day.isEmpty() && !time.isEmpty()) {
-                storeCourseSchedule(courseName, day, time);
-                JOptionPane.showMessageDialog(this, "Schedule submitted successfully.");
-            } else {
-                JOptionPane.showMessageDialog(this, "Please fill out all fields.");
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+
+                String serverAddress = ip;
+                int serverPort = 300;
+
+                try (Socket socket = new Socket(serverAddress, serverPort);
+                     OutputStream outputStream = socket.getOutputStream();
+                     DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+                     FileInputStream fileInputStream = new FileInputStream(selectedFile))
+                {
+                    // Send the file name to the server
+                    dataOutputStream.writeUTF(selectedFile.getName());
+                    dataOutputStream.write("Schedule\n".getBytes());
+
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+
+                    // Read the file data from the input stream and write it to the output stream
+                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    JOptionPane.showMessageDialog(this, "File uploaded successfully");
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error uploading file", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
-    }
-    private void storeCourseSchedule(String courseName, String day, String time) {
-        try (Connection connection = establishConnection()) {
-            String query = "INSERT INTO course_schedule (course_name, day, time) VALUES (?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, courseName);
-                preparedStatement.setString(2, day);
-                preparedStatement.setString(3, time);
-
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error storing course schedule.");
-        }
-    }
-    private Connection establishConnection() throws SQLException {
-        String url = "jdbc:mysql://your-database-url";
-        String user = "your-username";
-        String password = "your-password";
-        return DriverManager.getConnection(url, user, password);
     }
 }

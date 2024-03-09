@@ -1,64 +1,96 @@
 package GUI;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.border.Border;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.List;
 
 public class InstructorStudentListPage extends InstructorHomePage {
-    private JTable studentTable;
-    private DefaultTableModel tableModel;
+    private final JLabel titleLabel;
+    private final JPanel titlePanel;
+    private DefaultListModel<String> fileListModel;
+    private JList<String> fileList;
 
     InstructorStudentListPage() {
-        super("Student List");
-        initializeComponents();
-        retrieveStudentData();
-        addComponentsToFrame();
-    }
+        super("EduTrack - Student List");
 
-    private void initializeComponents() {
-        tableModel = new DefaultTableModel();
-        studentTable = new JTable(tableModel);
-        tableModel.addColumn("Student ID");
+        Border border = BorderFactory.createEtchedBorder();
 
-        // You can add more columns based on your database table structure
-        // For example, tableModel.addColumn("Name");
+        // Title Label
+        this.titleLabel = new JLabel("Student List");
+        formatLabel(titleLabel);
+        titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
-        studentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    }
+        // Title Panel
+        this.titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setPreferredSize(new Dimension(0, 80));
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-    private void retrieveStudentData() {
-        try (Connection connection = establishConnection()) {
-            String query = "SELECT student_id FROM students";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
+        // Create course button
 
-                while (resultSet.next()) {
-                    int studentID = resultSet.getInt("student_id");
-                    tableModel.addRow(new Object[]{studentID});
+        // File list
+        fileListModel = new DefaultListModel<>();
+        fileList = new JList<>(fileListModel);
+
+        // Set up layout
+        setLayout(new BorderLayout());
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(titlePanel, BorderLayout.NORTH);
+
+
+        this.add(topPanel, BorderLayout.NORTH);
+        this.add(new JScrollPane(fileList), BorderLayout.CENTER);
+        this.setVisible(true);
+
+        try (Socket socket = new Socket(ip, 350);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+            String request = "DisplayStudentFileList";
+            out.writeObject(request);
+
+            Object response = in.readObject();
+
+            if (response instanceof java.util.List) {
+                java.util.List<String> fileNames = (List<String>) response;
+                DefaultListModel<String> model = (DefaultListModel<String>) fileList.getModel();
+                model.clear();
+                for (String fileName : fileNames) {
+                    model.addElement(fileName);
                 }
+            } else {
+                System.out.println("Unexpected response from server");
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error retrieving student data.");
+            fileList.addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = fileList.getSelectedIndex();
+                    if (selectedRow != -1) {
+                        String selectedFileName = (String) fileList.getSelectedValue();
+                        System.out.println("Selected File: " + selectedFileName);
+                    }
+                }
+            });
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
-
-    private Connection establishConnection() throws SQLException {
-        String url = "jdbc:mysql://your-database-url";
-        String user = "your-username";
-        String password = "your-password";
-        return DriverManager.getConnection(url, user, password);
+    /*
+    private Component formatLabel(JLabel label) {
+        label.setFont(new Font("Arial", Font.BOLD, 30));
+        label.setForeground(new Color(70, 130, 180));
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setAlignmentY(JLabel.CENTER);
+        label.setBackground(Color.white);
+        label.setOpaque(true);
+        return label;
     }
-
-    private void addComponentsToFrame() {
-        JScrollPane scrollPane = new JScrollPane(studentTable);
-        add(scrollPane);
-    }
+     */
 }
 
 

@@ -11,11 +11,11 @@ import java.net.Socket;
 public class InstructorCourseMaterialPage extends InstructorHomePage implements ActionListener {
     private final JLabel titleLabel;
     private final JPanel titlePanel;
-    private JButton uploadButton;
-    private JFileChooser fileChooser;
+    private final JButton uploadButton;
+    private final JFileChooser fileChooser;
 
     InstructorCourseMaterialPage() {
-        super("Course Material");
+        super("EduTrack - Instructor Course Material");
 
         Border border = BorderFactory.createEtchedBorder();
 
@@ -31,7 +31,7 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
 
         // Upload Button
         uploadButton = new JButton("Upload");
-        formatSmallButton(uploadButton); // Changed to formatSmallButton
+        formatSmallButton(uploadButton);
         uploadButton.addActionListener(this);
 
         // Set up layout
@@ -40,7 +40,10 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(titlePanel, BorderLayout.NORTH);
 
-        topPanel.add(uploadButton, BorderLayout.SOUTH); // Removed dropdownPanel
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        centerPanel.add(uploadButton);
+
+        topPanel.add(centerPanel, BorderLayout.CENTER);
 
         add(topPanel, BorderLayout.NORTH);
 
@@ -49,7 +52,7 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
         // File chooser initialization
         fileChooser = new JFileChooser();
     }
-
+    /*
     private Component formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
         label.setForeground(new Color(70, 130, 180));
@@ -60,12 +63,17 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
         return label;
     }
 
+     */
+    /*
     private void formatSmallButton(JButton button) {
-        button.setFont(new Font("Arial", Font.PLAIN, 16)); // Changed font size
+        button.setFont(new Font("Arial", Font.PLAIN, 25)); // Changed font size
         button.setForeground(new Color(255, 255, 255));
         button.setBackground(new Color(70, 130, 180));
-        button.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Reduced padding
+        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Adjusted padding
+        button.setFocusable(false);
     }
+
+     */
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -75,18 +83,17 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
 
-                // Update the server address and port
-                String serverAddress = "your_server_ip"; // Replace with the server's IP address
-                int serverPort = 1234;
+                String serverAddress = ip;
+                int serverPort = 300;
 
                 try (Socket socket = new Socket(serverAddress, serverPort);
                      OutputStream outputStream = socket.getOutputStream();
                      DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-                     FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
-
+                     FileInputStream fileInputStream = new FileInputStream(selectedFile))
+                {
                     // Send the file name to the server
                     dataOutputStream.writeUTF(selectedFile.getName());
-
+                    dataOutputStream.write("InstructorCourseMaterialsUpload\n".getBytes());
                     byte[] buffer = new byte[1024];
                     int bytesRead;
 
@@ -94,12 +101,10 @@ public class InstructorCourseMaterialPage extends InstructorHomePage implements 
                     while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, bytesRead);
                     }
-
                     JOptionPane.showMessageDialog(this, "File uploaded successfully");
 
                 } catch (IOException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error uploading file");
+                    JOptionPane.showMessageDialog(this, "Error uploading file", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }

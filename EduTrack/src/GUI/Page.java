@@ -7,40 +7,38 @@ import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 abstract class Page extends JFrame {
-    protected JFrame page;
-    protected String title;
+    protected final JFrame page;
+    protected final String title;
     protected JPanel inputPanel;
     protected JLabel imageLabel = createImageLabel();
-    private int backgroundColorRed, backgroundColorGreen, backgroundColorBlue;
-    private int width, height;
-    protected static final String ip = "192.168.6.64";
+    private final int backgroundColorRed, backgroundColorGreen, backgroundColorBlue;
+    private final int width, height;
+    private final boolean resizable;
+    protected String email;
+    protected static final String ip = "192.168.0.200";
     protected GridBagConstraints constraints;
-    Page(String title, int width, int height, int backgroundColorRed, int backgroundColorGreen, int backgroundColorBlue) {
+    Page(String title, boolean resizable, int width, int height, int backgroundColorRed, int backgroundColorGreen, int backgroundColorBlue) {
         this.page = new JFrame(title);
         this.title = title;
+        this.resizable = resizable;
         this.width = width;
         this.height = height;
         this.backgroundColorRed = backgroundColorRed;
         this.backgroundColorGreen = backgroundColorGreen;
         this.backgroundColorBlue = backgroundColorBlue;
 
-        initializePage(false);
+        initializePage();
     }
-    Page(String title, int backgroundColorRed, int backgroundColorGreen, int backgroundColorBlue) {
-        this.page = new JFrame(title);
-        this.title = title;
-        this.backgroundColorRed = backgroundColorRed;
-        this.backgroundColorGreen = backgroundColorGreen;
-        this.backgroundColorBlue = backgroundColorBlue;
-
-        setExtendedState();
-        initializePage(true);
-    }
-    private void initializePage(boolean resizable) {
+    private void initializePage() {
         page.setTitle(title);
         page.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         page.setLayout(new BorderLayout());
-        page.setSize(width, height);
+        if (resizable) {
+            page.setSize(width, height);
+        } else {
+            setSize(Toolkit.getDefaultToolkit().getScreenSize());
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
         page.setLocationRelativeTo(null); // to center on the screen
         page.getContentPane().setBackground(new Color(backgroundColorRed, backgroundColorGreen, backgroundColorBlue));
         page.setResizable(resizable);
@@ -50,21 +48,18 @@ abstract class Page extends JFrame {
             page.setIconImage(icon.getImage());
         }
     }
-    private void setExtendedState() {
-        setSize(Toolkit.getDefaultToolkit().getScreenSize());
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-    }
     protected ImageIcon createImageIcon(String filename){
         URL imgUrl = getClass().getClassLoader().getResource(filename);
         if (imgUrl != null) {
             return new ImageIcon(imgUrl);
         } else {
-            System.err.println("Couldn't find file: " + filename);
-            return null;
+            throw new IllegalArgumentException("Couldn't find file: " + filename);
         }
     }
+
+
     protected JLabel createImageLabel(){
-        ImageIcon imageIcon = createImageIcon("icon2.png"); // Provide the path to your image
+        ImageIcon imageIcon = createImageIcon("icon2.png"); // Path to your image
         if (imageIcon != null) {
             this.imageLabel = new JLabel(imageIcon);
             imageLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -112,11 +107,23 @@ abstract class Page extends JFrame {
         menuItem.setBackground(Color.WHITE);
         menuItem.setHorizontalAlignment(SwingConstants.LEADING);
     }
+    void formatLabel(JLabel label) {
+        label.setFont(new Font("Arial", Font.BOLD, 30));
+        label.setForeground(new Color(70, 130, 180));
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setAlignmentY(JLabel.CENTER);
+        label.setBackground(Color.white);
+        label.setOpaque(true);
+    }
+    protected void handleException(String message, Exception ex){
+        JOptionPane.showMessageDialog(this, message + " : " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        ex.printStackTrace();
+    }
     protected void navigateToPage(Class<?> pageClass) {
         try {
             pageClass.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace(); // Handle the exception appropriately
+            e.printStackTrace();
         }
         this.dispose();
     }

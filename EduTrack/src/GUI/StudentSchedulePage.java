@@ -2,19 +2,21 @@ package GUI;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.Socket;
+import java.nio.file.Path;
+import java.util.List;
 
-public class StudentSchedulePage extends StudentHomePage {
+public class StudentSchedulePage extends StudentHomePage implements ActionListener {
     private final JLabel titleLabel;
     private final JPanel titlePanel;
-    private JTable scheduleTable;
-    private DefaultTableModel tableModel;
+    private DefaultListModel<String> fileListModel;
+    private JList<String> fileList;
+    private final JButton downloadButton;
 
     StudentSchedulePage() {
         super("EduTrack - Student Schedule");
@@ -22,7 +24,7 @@ public class StudentSchedulePage extends StudentHomePage {
         Border border = BorderFactory.createEtchedBorder();
 
         // Title Label
-        this.titleLabel = new JLabel("Schedule");
+        this.titleLabel = new JLabel("Student Schedule");
         formatLabel(titleLabel);
         titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
@@ -31,16 +33,17 @@ public class StudentSchedulePage extends StudentHomePage {
         titlePanel.setPreferredSize(new Dimension(0, 80));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Create table
-        String[] columnNames = {"Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
-        tableModel = new DefaultTableModel(null, columnNames);
-        scheduleTable = new JTable(tableModel);
+        // Create course button
 
-        // Retrieve schedule data from the database
-        retrieveScheduleData();
+        // File list
+        fileListModel = new DefaultListModel<>();
+        fileList = new JList<>(fileListModel);
 
-        // Set row height and column widths
-        scheduleTable.setRowHeight(30);
+        // Download button
+        downloadButton = new JButton("Download Schedule");
+        downloadButton.setEnabled(true);
+        formatButton(downloadButton);
+        downloadButton.addActionListener(this);
 
         // Set up layout
         setLayout(new BorderLayout());
@@ -48,54 +51,109 @@ public class StudentSchedulePage extends StudentHomePage {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(titlePanel, BorderLayout.NORTH);
 
+
         this.add(topPanel, BorderLayout.NORTH);
-        this.add(new JScrollPane(scheduleTable), BorderLayout.CENTER);
+        this.add(new JScrollPane(fileList), BorderLayout.CENTER);
+        this.add(downloadButton, BorderLayout.SOUTH);
+        this.setVisible(true);
 
-    }
+        try (Socket socket = new Socket(ip, 350);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-    private void retrieveScheduleData() {
-        try {
-            // Establish a database connection
-            Connection connection = DriverManager.getConnection("jdbc:mysql://your_database_url", "your_username", "your_password");
+            String request = "ScheduleRequestFileList";
+            out.writeObject(request);
 
-            // SQL query to retrieve schedule data (modify as needed)
-            String query = "SELECT time, monday, tuesday, wednesday, thursday, friday FROM schedule"; // Replace with your actual table name
+            Object response = in.readObject();
 
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-
-            // Execute the query
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Process the result set and update the table model
-            while (resultSet.next()) {
-                String[] rowData = {
-                        resultSet.getString("time"),
-                        resultSet.getString("monday"),
-                        resultSet.getString("tuesday"),
-                        resultSet.getString("wednesday"),
-                        resultSet.getString("thursday"),
-                        resultSet.getString("friday")
-                };
-                tableModel.addRow(rowData);
+            if (response instanceof java.util.List) {
+                java.util.List<String> fileNames = (List<String>) response;
+                DefaultListModel<String> model = (DefaultListModel<String>) fileList.getModel();
+                model.clear(); // Clear the list
+                for (String fileName : fileNames) {
+                    model.addElement(fileName);
+                }
+            } else {
+                System.out.println("Unexpected response from server");
             }
+            fileList.addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = fileList.getSelectedIndex();
+                    if (selectedRow != -1) {
+                        String selectedFileName = fileList.getSelectedValue();
+                        System.out.println("Selected File: " + selectedFileName);
+                    }
+                }
+            });
 
-            // Close resources
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
-        } catch (SQLException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            // Handle database error
-            JOptionPane.showMessageDialog(this, "Error retrieving schedule data: " + e.getMessage());
         }
     }
-
-    private void formatLabel(JLabel label) {
+    /*
+    private Component formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
         label.setForeground(new Color(70, 130, 180));
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setAlignmentY(JLabel.CENTER);
         label.setBackground(Color.white);
         label.setOpaque(true);
+        return label;
+    }
+
+     */
+    private void downloadFile(String selectedFile) {
+        try (Socket socket = new Socket(ip, 350)) {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            // Send a request to the server to get file data
+            out.writeObject("ScheduleRequestFile");
+            out.writeObject(selectedFile);
+
+
+            // Receive the file data from the server
+            byte[] fileData = (byte[]) in.readObject();
+
+            if (fileData != null) {
+                // Show file chooser dialog
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to save");
+                fileChooser.setSelectedFile(new File(selectedFile));
+                FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("PDF files", "pdf");
+                FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG files", "png");
+                FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG files","jpeg","jpg");
+                fileChooser.setFileFilter(pdfFilter);
+                fileChooser.addChoosableFileFilter(pngFilter);
+                fileChooser.addChoosableFileFilter(jpegFilter);
+                int userSelection = fileChooser.showSaveDialog(this);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    // Save the file to the selected location
+                    Path destination = fileChooser.getSelectedFile().toPath();
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(destination.toFile())) {
+                        fileOutputStream.write(fileData);
+                        JOptionPane.showMessageDialog(this, "File downloaded successfully!");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage());
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Error: Empty file data received");
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println(e.getMessage() + " ");
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error downloading file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == downloadButton) {
+            String selectedFile = fileList.getSelectedValue();
+            downloadFile(selectedFile);
+        }
     }
 }

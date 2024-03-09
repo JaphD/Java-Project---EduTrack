@@ -2,140 +2,201 @@ package GUI;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.net.Socket;
+import java.nio.file.Path;
+import java.util.List;
 
-public class InstructorAssignmentPage extends StudentHomePage {
-        private final JLabel titleLabel;
-        private final JPanel titlePanel;
-        private JButton chooseFileButton;
-        private JButton uploadButton;
-        private JLabel filePathLabel;
-        private JTextArea resultTextArea;
+public class InstructorAssignmentPage extends InstructorHomePage {
+    private final JLabel titleLabel;
+    private final JPanel titlePanel, downloadPanel, uploadPanel, downloadlistPanel;
+    private JButton downloadButton, uploadButton;
+    private final JFileChooser fileChooser;
+    private DefaultListModel<String> fileListModel;
+    private JList<String> fileList;
+    private JScrollPane scrollPane;
 
-        InstructorAssignmentPage() {
-            super("Assignment");
 
-            Border border = BorderFactory.createEtchedBorder();
+    InstructorAssignmentPage() {
+        super(" EduTrack - Instructor Assignment");
 
-            // Title Label
-            this.titleLabel = new JLabel("Assignment Upload");
-            formatLabel(titleLabel);
-            titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        Border border = BorderFactory.createEtchedBorder();
 
-            // Title Panel
-            this.titlePanel = new JPanel(new BorderLayout());
-            titlePanel.setPreferredSize(new Dimension(0, 80));
-            titlePanel.add(titleLabel, BorderLayout.CENTER);
+        // Title Label
+        this.titleLabel = new JLabel("Assignment");
+        formatLabel(titleLabel);
+        titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
-            // File Upload Section
-            JPanel fileUploadPanel = new JPanel(new GridLayout(5, 1));  // Increased rows for vertical spacing
-            chooseFileButton = new JButton("Select File");  // Changed button label
-            uploadButton = new JButton("Upload");
-            filePathLabel = new JLabel("Selected File: ");
-            resultTextArea = new JTextArea("Result: ");
+        // Title Panel
+        this.titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setPreferredSize(new Dimension(0, 80));
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-            // Apply formatting to components
-            formatSmallButton(chooseFileButton);  // Modified formatting
-            formatSmallButton(uploadButton);  // Modified formatting
-            formatLabel(filePathLabel);
-            formatTextArea(resultTextArea);
+        // File list
+        fileListModel = new DefaultListModel<>();
+        fileList = new JList<>(fileListModel);
 
-            // Add action listener to the "Select File" button
-            chooseFileButton.addActionListener(e -> chooseFile());
+        this.downloadPanel = createPanel("Download", "download.png", "Download", panelColor);
+        this.uploadPanel = createPanel("Upload", "upload.png", "Upload", panelColor);
+        this.downloadlistPanel = createPanel(panelColor);
 
-            // Add action listener to the "Upload" button
-            uploadButton.addActionListener(e -> uploadAssignment());
+        // Main Content Panel
+        this.setLayout(new BorderLayout(30, 30)); // Use BorderLayout with horizontal and vertical gaps
+        this.add(titlePanel, BorderLayout.NORTH); // Add the title panel to the north
 
-            // Add components to the file upload panel
-            fileUploadPanel.add(chooseFileButton);
-            fileUploadPanel.add(uploadButton);
-            fileUploadPanel.add(filePathLabel);
-            fileUploadPanel.add(resultTextArea);
+        // Panel containing Download and Upload panels
+        JPanel panelsContainer = new JPanel(new GridLayout(2, 2, 30, 30));
+        panelsContainer.add(downloadlistPanel);
+        panelsContainer.add(uploadPanel);
+        panelsContainer.add(downloadPanel);
+        panelsContainer.setBackground(backgroundColor);
 
-            // Add panels to the frame
-            add(titlePanel, BorderLayout.NORTH);
-            add(fileUploadPanel, BorderLayout.CENTER);
+        this.add(panelsContainer, BorderLayout.CENTER); // Add the container to the center
+        setVisible(true);
 
-            setVisible(true);
-        }
+        try (Socket socket = new Socket(ip, 350);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-        private void chooseFile() {
-            JFileChooser fileChooser = new JFileChooser();
-            int returnValue = fileChooser.showOpenDialog(this);
+            String request = "StudentRequestFileList";
+            out.writeObject(request);
 
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                String filePath = selectedFile.getAbsolutePath();
 
-                filePathLabel.setText("Selected File: " + filePath);
+            Object response = in.readObject();
 
-                // Enable the "Upload" button after file selection
-                uploadButton.setEnabled(true);
-            } else {
-                resultTextArea.setText("Result: File selection canceled.");
-            }
-        }
+            if (response instanceof List) {
+                List<String> fileNames = (List<String>) response;
 
-        private void uploadAssignment() {
-            JFileChooser fileChooser = new JFileChooser();
-            int returnValue = fileChooser.showOpenDialog(this);
-
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                String filePath = selectedFile.getAbsolutePath();
-
-                filePathLabel.setText("Selected File: " + filePath);
-
-                // Enable the "Upload Assignment" button after file selection
-                uploadButton.setEnabled(true);
-
-                // Save the file to the database
-                saveFileToDatabase(selectedFile);
-            } else {
-                resultTextArea.setText("Result: File selection canceled.");
-            }
-        }
-        private void saveFileToDatabase(File file) {
-            String url = "jdbc:mysql://localhost:3306/your_database";
-            String username = "your_username";
-            String password = "your_password";
-
-            try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                String sql = "INSERT INTO assignments (file_name, file_data) VALUES (?, ?)";
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    preparedStatement.setString(1, file.getName());
-
-                    try (FileInputStream fis = new FileInputStream(file)) {
-                        byte[] fileData = new byte[(int) file.length()];
-                        fis.read(fileData);
-                        preparedStatement.setBytes(2, fileData);
-                    }
-
-                    preparedStatement.executeUpdate();
+                DefaultListModel<String> listModel = (DefaultListModel<String>) fileList.getModel();
+                listModel.clear();
+                for (String fileName : fileNames) {
+                    listModel.addElement(fileName);
                 }
-                resultTextArea.setText("Result: File uploaded successfully.");
-            } catch (SQLException | IOException e) {
-                e.printStackTrace();
-                resultTextArea.setText("Result: Error - Unable to upload file to the database.");
+
+                // Create JList with the created DefaultListModel
+                // JList<String> fileList = new JList<>(listModel);
+                fileList.setModel(listModel);
+
+
+                // Set some properties for the JList (optional)
+                fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                fileList.setLayoutOrientation(JList.VERTICAL);
+
+                this.scrollPane = new JScrollPane(fileList);
+                scrollPane.setPreferredSize(new Dimension(720, 310));
+                downloadlistPanel.add(scrollPane);
+            } else {
+                System.out.println("Unexpected response from server");
+            }
+
+            fileList.addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = fileList.getSelectedIndex();
+                    if (selectedRow != -1) {
+                        String selectedFileName = fileList.getSelectedValue();
+                        System.out.println("Selected File: " + selectedFileName);
+                    }
+                }
+            });
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        // File chooser initialization
+        fileChooser = new JFileChooser();
+    }
+
+    JPanel createPanel(Color backgroundColor) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(backgroundColor);
+
+        return panel;
+    }
+
+    private void downloadFile(String selectedFile) {
+        try (Socket socket = new Socket(ip, 350)) {
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+            // Send a request to the server to get file data
+            out.writeObject("StudentRequestFile");
+            out.writeObject(selectedFile);
+
+
+            // Receive the file data from the server
+            byte[] fileData = (byte[]) in.readObject();
+
+            if (fileData != null) {
+                // Show file chooser dialog
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to save");
+                fileChooser.setSelectedFile(new File(selectedFile));
+                FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("PDF files", "pdf");
+                FileNameExtensionFilter pngFilter = new FileNameExtensionFilter("PNG files", "png");
+                FileNameExtensionFilter jpegFilter = new FileNameExtensionFilter("JPEG files", "jpeg");
+                fileChooser.setFileFilter(pdfFilter);
+                fileChooser.addChoosableFileFilter(pngFilter);
+                fileChooser.addChoosableFileFilter(jpegFilter);
+                int userSelection = fileChooser.showSaveDialog(this);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    // Save the file to the selected location
+                    Path destination = fileChooser.getSelectedFile().toPath();
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(destination.toFile())) {
+                        fileOutputStream.write(fileData);
+                        JOptionPane.showMessageDialog(this, "File downloaded successfully!");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Error saving file", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Error: Empty file data received");
+            }
+        } catch (ClassNotFoundException | IOException e) {
+            JOptionPane.showMessageDialog(this, "Error downloading file. Please try again ", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    void handleButtonClick(String buttonText) {
+        switch (buttonText) {
+            case "Download" -> {
+                String selectedFileName = fileList.getSelectedValue();
+                downloadFile(selectedFileName);
+            }
+            case "Upload" -> {
+                int result = fileChooser.showOpenDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    String serverAddress = ip;
+                    int serverPort = 300;
+                    try (Socket socket = new Socket(serverAddress, serverPort);
+                         OutputStream outputStream = socket.getOutputStream();
+                         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+                         FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+                        dataOutputStream.writeUTF(selectedFile.getName());
+                        dataOutputStream.write("InstructorAssignmentsUpload\n".getBytes());
+
+                        byte[] buffer = new byte[1024];
+                        int bytesRead;
+
+                        while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                            outputStream.write(buffer, 0, bytesRead);
+                        }
+                        JOptionPane.showMessageDialog(this, "File uploaded successfully");
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(this, "Error uploading file", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         }
 
-        private void formatSmallButton(JButton button) {
-            button.setFont(new Font("Arial", Font.PLAIN, 30));
-            button.setForeground(Color.WHITE);
-            button.setBackground(new Color(70, 130, 180));
-            button.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));  // Decreased padding
-        }
-
+        /*
         private void formatLabel(JLabel label) {
-            label.setFont(new Font("Arial", Font.BOLD, 30));
+            label.setFont(new Font("Arial", Font.BOLD, 35));
             label.setForeground(new Color(70, 130, 180));
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setAlignmentY(JLabel.CENTER);
@@ -143,15 +204,10 @@ public class InstructorAssignmentPage extends StudentHomePage {
             label.setOpaque(true);
         }
 
-        private void formatTextArea(JTextArea textArea) {
-            textArea.setFont(new Font("Arial", Font.BOLD, 16));
-            textArea.setForeground(new Color(70, 130, 180));
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-            textArea.setEditable(false);
-            textArea.setBackground(Color.WHITE);
-            textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        }
+         */
     }
+}
+
+
 
 

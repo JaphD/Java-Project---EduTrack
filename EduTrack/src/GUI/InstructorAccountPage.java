@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InstructorAccountPage extends InstructorHomePage implements ActionListener {
-    private JPanel profilePanel;
+    private final JPanel profilePanel;
     private JLabel titleLabel, usernameLabel, passwordLabel;
     private JTextField  old_PasswordField, new_PasswordField, securityKeyField;
     private JPasswordField passwordField;
-    private JButton editButton;
+    private final JButton editButton;
 
     InstructorAccountPage() {
         super("EduTrack - Instructor Account Page ");
@@ -75,18 +75,19 @@ public class InstructorAccountPage extends InstructorHomePage implements ActionL
             if (validationErrors.isEmpty())
                 try {
                     try {
-                        Socket socket = new Socket(ip, 500);
+                        Socket socket = new Socket(ip, 250);
                         OutputStream out = socket.getOutputStream();
                         InputStream in = socket.getInputStream();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
                         String send = "Send";
 
-                        // Send data in a structured format (e.g., JSON or CSV)
+                        // Sends data in a structured format
                         String data = String.format("%s,%s,%s,%s\n", old_Password, new_Password, securityKey, send);
                         out.write(data.getBytes());
 
                         String response = reader.readLine();
+                        System.out.println(response);
 
                         if (response.equals("Updated")) {
                             JOptionPane.showMessageDialog(this, "Account edited successfully!");
@@ -99,7 +100,7 @@ public class InstructorAccountPage extends InstructorHomePage implements ActionL
 
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
-                                "Warning", JOptionPane.WARNING_MESSAGE);
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (HeadlessException ex) {
                     throw new RuntimeException(ex);

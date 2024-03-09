@@ -1,7 +1,5 @@
 package GUI;
 
-import org.w3c.dom.ls.LSOutput;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -9,26 +7,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
-import java.sql.SQLOutput;
 
-public class InstructorVerificationPage extends InstructorSignUpPage implements ActionListener {
+public class InstructorVerificationPage extends Page implements ActionListener {
     private final JLabel verificationLabel;
     private final JPanel verificationPanel;
     private final JTextField verificationField;
     private final JButton submitButton;
 
     InstructorVerificationPage() {
-        super("Instructor Verification Page");
+        super("EduTrack - Instructor Verification", true, 800, 700, 211, 211,211);
 
-
-
-
-        // Create and configure the "Verification" label
         Border border = BorderFactory.createEtchedBorder();
 
         this.verificationLabel = new JLabel("Instructor Sign Up");
         verificationLabel.setFont(new Font("Arial", Font.BOLD, 40));
-        verificationLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
+        verificationLabel.setForeground(new Color(70, 130, 180)); // Sets color to a shade of blue
         verificationLabel.setHorizontalAlignment(JLabel.CENTER);
         verificationLabel.setVerticalAlignment(JLabel.CENTER);
         verificationLabel.setBackground(Color.white);
@@ -43,8 +36,6 @@ public class InstructorVerificationPage extends InstructorSignUpPage implements 
         inputPanel = new JPanel(new GridBagLayout());
 
         addFormField("Verification Number", verificationField = new JTextField(20), "Input your verification number", 4);
-
-
 
         this.constraints = new GridBagConstraints();
 
@@ -67,23 +58,15 @@ public class InstructorVerificationPage extends InstructorSignUpPage implements 
         return email;
     }
 
-
-
-
-
-
-
-
-
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 25));
         button.setForeground(Color.white);
-        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
+        button.setBackground(new Color(70, 130, 180)); // Sets color to a shade of blue
         button.addActionListener(this);
         constraints.gridy = gridy;
         constraints.gridx = gridx;
-        constraints.insets = new Insets(top, left, bottom, right); // Add some spacing below the last text field
+        constraints.insets = new Insets(top, left, bottom, right); // Adds some spacing below the last text field
     }
     String savedEmail = getEmailFromFile();
 
@@ -92,16 +75,16 @@ public class InstructorVerificationPage extends InstructorSignUpPage implements 
     public void actionPerformed(ActionEvent e) {
         String verificationNumber=verificationField.getText();
         System.out.println("the email value"+ savedEmail);
-        String send="Correct";
         if (e.getSource() == submitButton) {
-            try (Socket socket = new Socket(ip, 357);
+            try (Socket socket = new Socket(ip, 200);
                  BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                  OutputStream out = socket.getOutputStream()) {
-                String data2 = String.format("%s,%s,%s\n",savedEmail,verificationNumber,send);
+                //out.write("InstructorForm\n".getBytes());
+                String data2 = String.format("%s,%s\n",savedEmail,verificationNumber);
                 out.write(data2.getBytes());
                 String responseVR= in.readLine();// Print server response
                 System.out.println(responseVR);
-                if(("23").equals(responseVR)){
+                if(("SignUpVerified").equals(responseVR)){
                     JOptionPane.showMessageDialog(this, "Sign up successful");
                     new InstructorLoginPage();
                     page.dispose();
@@ -113,8 +96,6 @@ public class InstructorVerificationPage extends InstructorSignUpPage implements 
             } catch (IOException a) {
                 a.printStackTrace();
             }
-
-
         }
     }
 }

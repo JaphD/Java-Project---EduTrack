@@ -11,14 +11,13 @@ public class LoginPage extends Page implements ActionListener {
     private final JLabel loginLabel;
     private final JButton studentButton, instructorButton;
     LoginPage() {
-        super("EduTrack-Login", 650, 550, 211, 211, 211);
+        super("EduTrack - Login", true, 650, 550, 211,211, 211);
 
-        // Create and configure the "Login" label
         Border border = BorderFactory.createEtchedBorder();
-        // Create login label and giving it the desired format
+
         loginLabel = new JLabel("Login");
         loginLabel.setFont(new Font("Arial", Font.BOLD, 40));
-        loginLabel.setForeground(new Color(70, 130, 180)); // Set color to a shade of blue
+        loginLabel.setForeground(new Color(70, 130, 180)); // Sets the color to a shade of blue
         loginLabel.setHorizontalAlignment(JLabel.CENTER);
         loginLabel.setVerticalAlignment(JLabel.CENTER);
         loginLabel.setBackground(Color.white);
@@ -71,7 +70,7 @@ public class LoginPage extends Page implements ActionListener {
         if (e.getSource() == studentButton) {
             try {
                 new StudentLoginPage();
-                page.dispose(); // Close current window after opening new page
+                page.dispose();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
             }

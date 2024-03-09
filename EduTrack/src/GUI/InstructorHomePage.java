@@ -7,11 +7,14 @@ import java.awt.event.ActionListener;
 
 public class InstructorHomePage extends Page{
     private JMenuBar instructorMenuBar;
+    protected Color panelColor;
+    protected Color backgroundColor;
+    protected String buttonText;
      InstructorHomePage() {
-        super("EduTrack - Instructor Homepage",211, 211, 211);
+        super("EduTrack - Instructor Home",false, 0, 0, 211, 211, 211);
         // Panel Color and Background Color
-         Color panelColor = new Color(211,211,211);
-         Color backgroundColor = new Color(70,130,180);
+         panelColor = new Color(211,211,211);
+         backgroundColor = new Color(70,130,180);
 
         // Create panels for each button and set layout
         JPanel announcementPanel = createPanel("Announcement","Announcement.png", "Announcement",panelColor);
@@ -30,7 +33,8 @@ public class InstructorHomePage extends Page{
          this.getContentPane().setBackground(backgroundColor);
     }
     InstructorHomePage(String title){
-        super(title,211, 211, 211);
+        super(title, false, 0, 0, 211, 211, 211);
+
         initializeHome();
     }
     private void initializeHome(){
@@ -45,7 +49,6 @@ public class InstructorHomePage extends Page{
 
         JMenuItem accountItem = new JMenuItem("Account");
         JMenuItem assessmentItem = new JMenuItem("Assessment");
-        JMenuItem attendanceItem = new JMenuItem("Attendance");
         JMenuItem scheduleItem = new JMenuItem("Schedule");
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
 
@@ -53,16 +56,16 @@ public class InstructorHomePage extends Page{
         addMenuItemListener(logoutItem, e -> {}, this::logout);
         addMenuItemListener(accountItem, e -> {}, this::account);
         addMenuItemListener(assessmentItem, e -> {}, this::assessment);
-        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
         addMenuItemListener(scheduleItem, e -> {}, this::schedule);
+        addMenuItemListener(quizRoomItem, e -> {}, this:: quizRoom);
 
         formatMenuItem(homeItem); formatMenuItem(logoutItem);
 
-        formatMenuItem(accountItem); formatMenuItem(assessmentItem); formatMenuItem(attendanceItem); formatMenuItem(scheduleItem); formatMenuItem(quizRoomItem);
+        formatMenuItem(accountItem); formatMenuItem(assessmentItem); formatMenuItem(scheduleItem); formatMenuItem(quizRoomItem);
 
         homeMenu.add(homeItem); homeMenu.add(logoutItem);
 
-        menuMenu.add(accountItem); menuMenu.add(assessmentItem); menuMenu.add(attendanceItem); menuMenu.add(scheduleItem); menuMenu.add(quizRoomItem);
+        menuMenu.add(accountItem); menuMenu.add(assessmentItem); menuMenu.add(scheduleItem); menuMenu.add(quizRoomItem);
 
         instructorMenuBar.add(homeMenu);
         instructorMenuBar.add(menuMenu);
@@ -77,15 +80,13 @@ public class InstructorHomePage extends Page{
         this.setVisible(true);
         }
     private void addMenuItemListener(JMenuItem menuItem, ActionListener listener, ActionMethod action) {
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                listener.actionPerformed(e);
-                action.performAction();
-            }
+        menuItem.addActionListener((ActionEvent e) -> {
+            listener.actionPerformed(e);
+            action.performAction();
         });
     }
-    private JPanel createPanel(String buttonText, String imagePath,String tooltipText,Color backgroundColor) {
+
+    JPanel createPanel(String buttonText, String imagePath,String tooltipText,Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(backgroundColor);
 
@@ -107,12 +108,7 @@ public class InstructorHomePage extends Page{
         }
 
         button.setToolTipText(tooltipText);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleButtonClick(buttonText);
-            }
-        });
+        button.addActionListener(e -> handleButtonClick(buttonText));
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
@@ -134,37 +130,50 @@ public class InstructorHomePage extends Page{
     private void assessment(){
         navigateToPage(InstructorAssessmentPage.class);
     }
-    private void attendance(){
-        navigateToPage(InstructorAttendancePage.class);
-    }
     private void schedule(){
         navigateToPage(InstructorSchedulePage.class);
     }
+    private void quizRoom(){navigateToPage(InstructorQuizRoomPage.class);}
     void handleButtonClick(String buttonText) {
         switch (buttonText) {
-            case "Announcement":
-                // Create and show a new instance of StudentAnnouncementPage
+            case "Announcement" -> {
                 new InstructorAnnouncementPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Student List":
-                // Create and show a new instance of StudentSchedulePage
+                this.dispose();
+            }
+            case "Student List" -> {
                 new InstructorStudentListPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Assignment":
-                // Create and show a new instance of StudentAssignmentPage
+                this.dispose();
+            }
+            case "Assignment" -> {
                 new InstructorAssignmentPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Course Material":
+                this.dispose();
+            }
+            case "Course Material" -> {
                 new InstructorCourseMaterialPage();
                 this.dispose();
-                break;
-            default:
+            }
+            default -> {
                 // Handle unknown button text
-                break;
+            }
         }
+    }
+
+    /*
+    @Override
+    void formatButton(JButton button) {
+        button.setFont(new Font("Arial", Font.PLAIN, 20));
+        button.setForeground(new Color(255, 255, 255));
+        button.setBackground(new Color(70, 130, 180));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    }
+
+     */
+    void formatSmallButton(JButton button) {
+        button.setFont(new Font("Arial", Font.PLAIN, 25)); // Changed font size
+        button.setForeground(new Color(255, 255, 255));
+        button.setBackground(new Color(70, 130, 180));
+        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Adjusted padding
+        button.setFocusable(false);
     }
     @Override
     void actionPerformed(ActionEvent e) {

@@ -2,24 +2,19 @@ package GUI;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.List;
 
-public class InstructorAssessmentPage extends InstructorHomePage implements ActionListener {
+public class InstructorAssessmentPage extends InstructorHomePage {
     private final JLabel titleLabel;
     private final JPanel titlePanel;
-    private JTable assessmentTable;
-    private DefaultTableModel tableModel;
-    private JButton submitButton;
 
-    InstructorAssessmentPage() {
+    public InstructorAssessmentPage() {
         super("Instructor - Assessment");
 
         Border border = BorderFactory.createEtchedBorder();
@@ -34,40 +29,109 @@ public class InstructorAssessmentPage extends InstructorHomePage implements Acti
         titlePanel.setPreferredSize(new Dimension(0, 80));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Create table
-        String[] columnNames = {"Assessment Type", "Score", "Letter Grade"};
-        tableModel = new DefaultTableModel(null, columnNames);
-        assessmentTable = new JTable(tableModel);
-
-        // Set row height and column widths
-        assessmentTable.setRowHeight(30);
-        assessmentTable.getColumnModel().getColumn(0).setPreferredWidth(200);
-        assessmentTable.getColumnModel().getColumn(1).setPreferredWidth(100);
-        assessmentTable.getColumnModel().getColumn(2).setPreferredWidth(150);
-
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-        cellRenderer.setFont(new Font("Arial", Font.PLAIN, 20));
-        assessmentTable.setDefaultRenderer(Object.class, cellRenderer);
-
-        // Submit Button
-        submitButton = new JButton("Submit");
-        formatButton(submitButton);
-        submitButton.addActionListener(this);
-
         // Set up layout
         setLayout(new BorderLayout());
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(titlePanel, BorderLayout.NORTH);
-
         add(topPanel, BorderLayout.NORTH);
-        add(new JScrollPane(assessmentTable), BorderLayout.CENTER);
-        add(submitButton, BorderLayout.SOUTH);
 
-        setVisible(true);
+        try (Socket socket = new Socket(ip, 350);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+            String request = "GradeAssessmentList";
+            out.writeObject(request);
+
+            Object response = in.readObject();
+
+            if (response instanceof List) {
+                List<String> fileNames = (List<String>) response;
+
+                JFrame frame = new JFrame("File List");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+                // Create a table model and add data
+                Object[][] data = new Object[fileNames.size()][4];
+                for (int i = 0; i < fileNames.size(); i++) {
+                    String[] parts = fileNames.get(i).split(",");
+                    for (int j = 0; j < parts.length; j++) {
+                        data[i][j] = parts[j];
+                    }
+                }
+
+                String[] columnNames = {"First Name", "Last Name", "ID", "Grade"};
+
+                DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+                JTable table = new JTable(tableModel);
+
+                // Create a scroll pane for the table
+                JScrollPane scrollPane = new JScrollPane(table);
+
+                // Add the scroll pane to the frame
+                add(scrollPane, BorderLayout.CENTER);
+
+                // Set up the frame
+                setSize(500, 500);
+                setResizable(false);
+                setLocationRelativeTo(null);
+                setVisible(true);
+
+                // Add a button to trigger grade update
+                JButton updateGradeButton = new JButton("Update Grade");
+                formatButton(updateGradeButton);
+                updateGradeButton.addActionListener(e -> {
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        String id = (String) table.getValueAt(selectedRow, 2);
+                        String newGrade = JOptionPane.showInputDialog("Enter new grade:");
+                        updateGrade(id, newGrade);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Please select a student to update the grade.");
+                    }
+                });
+
+                JPanel buttonPanel = new JPanel();
+                buttonPanel.add(updateGradeButton);
+                add(buttonPanel, BorderLayout.SOUTH);
+
+            } else {
+                System.out.println("Unexpected response from server");
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
-    private Component formatLabel(JLabel label) {
+    private static void updateGrade(String id, String newGrade) {
+        try (Socket socket = new Socket(ip, 350);
+                     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+                    String request = "UpdateGrade";
+                    out.writeObject(request);
+                    out.writeObject(id);
+                    out.writeObject(newGrade);
+
+                    Object response = in.readObject();
+                    if (response instanceof Boolean) {
+                        boolean success = (Boolean) response;
+                        if (success) {
+                            JOptionPane.showMessageDialog(null, "Grade updated successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Failed to update grade. Student ID not found.");
+                        }
+                    } else {
+                        System.out.println("Unexpected response from server");
+                    }
+
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+    }
+    /*
+    private JLabel formatLabel(JLabel label) {
         label.setFont(new Font("Arial", Font.BOLD, 30));
         label.setForeground(new Color(70, 130, 180));
         label.setHorizontalAlignment(JLabel.CENTER);
@@ -76,55 +140,6 @@ public class InstructorAssessmentPage extends InstructorHomePage implements Acti
         label.setOpaque(true);
         return label;
     }
-    @Override
-    void formatButton(JButton button) {
-        button.setFont(new Font("Arial", Font.PLAIN, 20));
-        button.setForeground(new Color(255, 255, 255));
-        button.setBackground(new Color(70, 130, 180));
-        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
-            // Iterate through the table to get assessment data
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                String assessmentType = (String) tableModel.getValueAt(i, 0);
-                int score = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
-                String letterGrade = (String) tableModel.getValueAt(i, 2);
-
-                // Send data to MySQL database
-                sendToDatabase(assessmentType, score, letterGrade);
-            }
-
-            // Display a confirmation message or handle database submission result
-            JOptionPane.showMessageDialog(this, "Assessment data submitted.");
-        }
-    }
-
-    // Method to establish a connection to the MySQL database
-    private Connection establishConnection() throws SQLException {
-        String url = "jdbc:mysql://your-database-url";
-        String user = "your-username";
-        String password = "your-password";
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    // Method to send assessment data to the MySQL database
-    private void sendToDatabase(String assessmentType, int score, String letterGrade) {
-        try (Connection connection = establishConnection()) {
-            String query = "INSERT INTO assessments (assessment_type, score, letter_grade) VALUES (?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, assessmentType);
-                preparedStatement.setInt(2, score);
-                preparedStatement.setString(3, letterGrade);
-
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            // Handle database error
-            JOptionPane.showMessageDialog(this, "Error submitting assessment data.");
-        }
-    }
+     */
 }
+

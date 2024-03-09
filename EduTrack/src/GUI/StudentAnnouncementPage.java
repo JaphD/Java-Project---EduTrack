@@ -1,185 +1,96 @@
 package GUI;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
-import java.sql.*;
-import java.util.Vector;
+import java.io.*;
+import java.net.Socket;
+import java.util.List;
 
-public class StudentAnnouncementPage extends StudentHomePage implements MouseListener {
-    private final JLabel titleLabel;
-    private final JPanel titlePanel;
-    private final JPanel imagePanel;
-    private final JPanel tablePanel;
-    private final JPanel textPanel;
+import java.util.Date;
+public class StudentAnnouncementPage extends StudentHomePage {
+    private final JTextArea announcementTextArea;
 
-    public StudentAnnouncementPage() {
-        super("Announcement");
+    public StudentAnnouncementPage(){
+        super("EduTrack - Student Announcement");
 
         Border border = BorderFactory.createEtchedBorder();
 
-        // Title Label
-        this.titleLabel = new JLabel("Announcement");
-        formatLabel(titleLabel);
-        titleLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        // Text Area
+        this.announcementTextArea = new JTextArea();
+        announcementTextArea.setEditable(false);
+        announcementTextArea.setLineWrap(true);
+        announcementTextArea.setWrapStyleWord(true);
+        announcementTextArea.setFont(new Font("Arial", Font.PLAIN, 16));
+        announcementTextArea.setVisible(true);
 
         // Title Panel
-        this.titlePanel = new JPanel(new BorderLayout());
+        JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setPreferredSize(new Dimension(0, 80));
+        JLabel titleLabel = new JLabel("Announcement");
+        formatLabel(titleLabel);
         titlePanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Image Panel
-        this.imagePanel = new JPanel();
-        imagePanel.addMouseListener(this);
-        imagePanel.setVisible(false);
-        displayImage(imagePanel);
-
-        // Table Panel
-        this.tablePanel = new JPanel();
-        tablePanel.addMouseListener(this);
-        tablePanel.setVisible(false);
-        displayTable(tablePanel);
-
-        // Text Panel
-        this.textPanel = new JPanel();
-        textPanel.addMouseListener(this);
-        textPanel.setVisible(false);
-        displayText(textPanel);
+        // Main Panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(titlePanel, BorderLayout.NORTH);
+        mainPanel.add(new JScrollPane(announcementTextArea), BorderLayout.CENTER);
 
         // Set up layout
         setLayout(new BorderLayout());
+        add(mainPanel, BorderLayout.CENTER);
 
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(titlePanel, BorderLayout.NORTH);
-
-        this.add(topPanel, BorderLayout.NORTH);
-        this.add(imagePanel, BorderLayout.WEST);
-        this.add(tablePanel, BorderLayout.CENTER);
-        this.add(textPanel, BorderLayout.EAST);
+        displayAnnouncementsFromServer();
     }
 
-    // ... (formatLabel, displayImage, displayText methods)
-    private void formatLabel(JLabel label) {
-        label.setFont(new Font("Arial", Font.BOLD, 30));
-        label.setForeground(new Color(70, 130, 180));
-        label.setHorizontalAlignment(JLabel.CENTER);
-        label.setAlignmentY(JLabel.CENTER);
-        label.setBackground(Color.white);
-        label.setOpaque(true);
-    }
-    private void displayImage(JPanel panel) {
-        try {
-            // Load an example image (replace with your image URL)
-            URL imageUrl = new URL("https://via.placeholder.com/200");
-            BufferedImage image = ImageIO.read(imageUrl);
-            JLabel imageLabel = new JLabel(new ImageIcon(image));
-            panel.add(imageLabel);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void displayText(JPanel panel) {
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-
-        // Fetch text data from the database and set it in the text area
-        String textData = fetchTextFromDatabase(); // Implement this method
-        textArea.setText(textData);
-
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        panel.add(scrollPane);
-    }
-
-    // Example method to fetch text data from the database
-    private String fetchTextFromDatabase() {
-        // Implement logic to fetch text data from the database
-        // Replace the return statement with your actual logic
-        return "This is a sample text.\nYou can add more information here.";
-    }
-    private void displayTable(JPanel panel) {
-        try {
-            // Establish a database connection (replace with your connection details)
-            Connection connection = DriverManager.getConnection("jdbc:mysql://your_database_url", "your_username", "your_password");
-
-            // Create a statement
-            Statement statement = connection.createStatement();
-
-            // Execute a query to retrieve data from the database (replace with your query)
-            String query = "SELECT * FROM your_table";
-            ResultSet resultSet = statement.executeQuery(query);
-
-            // Get column names
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            Vector<String> columnNames = new Vector<>();
-            for (int i = 1; i <= columnCount; i++) {
-                columnNames.add(metaData.getColumnName(i));
+    public String processResponseList(List<Object> responseList) {
+        StringBuilder displayText = new StringBuilder();
+        for (Object obj : responseList) {
+            if (obj instanceof Announcement) {
+                Announcement announcement = (Announcement) obj;
+                displayText.append(announcement.getAnnouncement()).append("\n");
+                displayText.append("Posted Time: ").append(announcement.getPostTime()).append("\n\n");
+            } else if (obj instanceof String) {
+                displayText.append(obj).append("\n\n");
+            } else {
+                // Log or handle unexpected object type appropriately
+                System.err.println("Unexpected object type in response list: " + obj.getClass().getName());
             }
+        }
+        return displayText.toString();
+    }
 
-            // Get data rows
-            Vector<Vector<Object>> data = new Vector<>();
-            while (resultSet.next()) {
-                Vector<Object> row = new Vector<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.add(resultSet.getObject(i));
-                }
-                data.add(row);
-            }
+    private void displayAnnouncementsFromServer() {
+        try (Socket socket = new Socket(ip, 350);
+             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
 
-            // Create a table
-            JTable table = new JTable(new DefaultTableModel(data, columnNames));
-            JScrollPane scrollPane = new JScrollPane(table);
-            panel.add(scrollPane);
+            String request = "DisplayAnnouncement";
+            out.writeObject(request);
+            Object response = in.readObject();
 
-            // Close resources
-            resultSet.close();
-            statement.close();
-            connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error fetching table data: " + e.getMessage());
+            String formattedText = processResponseList((List<Object>) response);
+            announcementTextArea.setText(formattedText);
+
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(null,"Error communicating with server", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    public static class Announcement {
+        private String announcement;
+        private Date postTime;
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.getSource() == imagePanel) {
-            imagePanel.setVisible(!imagePanel.isVisible());
-        } else if (e.getSource() == tablePanel) {
-            tablePanel.setVisible(!tablePanel.isVisible());
-        } else if (e.getSource() == textPanel) {
-            textPanel.setVisible(!textPanel.isVisible());
+        public String getAnnouncement() {
+            return announcement;
+        }
+        public void setAnnouncement(String announcement) {
+            this.announcement = announcement;
+        }
+        public Date getPostTime() {
+            return postTime;
+        }
+        public void setPostTime(Date postTime) {
+            this.postTime = postTime;
         }
     }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
-
-    // ... (other MouseListener methods)
 }

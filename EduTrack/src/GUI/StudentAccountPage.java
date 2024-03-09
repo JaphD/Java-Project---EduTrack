@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StudentAccountPage extends StudentHomePage implements ActionListener {
-    private JPanel profilePanel;
+    private final JPanel profilePanel;
     private JLabel titleLabel, usernameLabel, passwordLabel;
     private JTextField old_PasswordField, new_PasswordField;
     private JPasswordField passwordField;
-    private JButton editButton;
+    private final JButton editButton;
 
     StudentAccountPage() {
-        super("EduTrack - Student Account Page");
+        super("EduTrack - Student Account");
 
         Border border = BorderFactory.createEtchedBorder();
 
@@ -73,7 +73,7 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
             if (validationErrors.isEmpty())
                 try {
                     try {
-                        Socket socket = new Socket(ip, 500);
+                        Socket socket = new Socket(ip, 250);
                         OutputStream out = socket.getOutputStream();
                         InputStream in = socket.getInputStream();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -96,7 +96,7 @@ public class StudentAccountPage extends StudentHomePage implements ActionListene
 
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
-                                "Warning", JOptionPane.WARNING_MESSAGE);
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (HeadlessException ex) {
                     throw new RuntimeException(ex);

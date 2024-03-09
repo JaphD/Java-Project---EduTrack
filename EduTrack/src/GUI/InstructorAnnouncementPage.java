@@ -1,20 +1,19 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.io.*;
+import java.net.Socket;
 
 public class InstructorAnnouncementPage extends InstructorHomePage implements ActionListener {
     private JTextArea announcementTextArea;
     private JLabel titleLabel;
     private JPanel titlePanel;
-    private JScrollPane announcementScrollPane;
     private JButton submitButton;
+    private Color textColor;
 
     public InstructorAnnouncementPage() {
         super("Instructor Announcement");
@@ -22,86 +21,116 @@ public class InstructorAnnouncementPage extends InstructorHomePage implements Ac
         addComponentsToFrame();
         setVisible(true);
     }
-
     private void initializeComponents() {
-        // Announcement Text Area
+        // Announcement Text Area with shady blue border
+        textColor = new Color(15,15,15);
         announcementTextArea = new JTextArea();
-        announcementScrollPane = new JScrollPane(announcementTextArea);
-        announcementScrollPane.setPreferredSize(new Dimension(400, 200));
+        announcementTextArea.setLineWrap(true);
+        announcementTextArea.setWrapStyleWord(true);
+        announcementTextArea.setFont(new Font("Arial", Font.BOLD, 25));
+        announcementTextArea.setForeground(textColor);
+        announcementTextArea.setToolTipText("Character Count should not exceed 750");
+        announcementTextArea.setBorder(new LineBorder(new Color(173, 216, 230), 15)); // Shady blue border
+
+
+        int squareSize = 150; // Adjust as needed
+        announcementTextArea.setPreferredSize(new Dimension(squareSize, squareSize));
 
         // Submit Button
-        submitButton = new JButton("Submit");
+        submitButton = new JButton("Post");
+        submitButton.setPreferredSize(new Dimension(20, 20));
         formatButton(submitButton);
         submitButton.addActionListener(this);
 
         // Title Label
         titleLabel = new JLabel("Announcement");
+        titleLabel.setSize(100,120);
         formatLabel(titleLabel);
 
         // Title Panel
         titlePanel = new JPanel(new BorderLayout());
         titlePanel.add(titleLabel, BorderLayout.CENTER);
     }
-
     private void addComponentsToFrame() {
         Container contentPane = getContentPane();
-        contentPane.add(titlePanel, BorderLayout.NORTH);
-        contentPane.add(announcementScrollPane, BorderLayout.CENTER);
-        contentPane.add(submitButton, BorderLayout.SOUTH);
+        contentPane.setLayout(new GridBagLayout());
+
+        GridBagConstraints gridbag = new GridBagConstraints();
+
+        // Title Panel
+        gridbag.gridx = 0;
+        gridbag.gridy = 0;
+        gridbag.gridwidth = 2;
+        gridbag.fill = GridBagConstraints.HORIZONTAL;
+        gridbag.insets = new Insets(50, 300, 50, 300);
+        contentPane.add(titlePanel, gridbag);
+
+        // Announcement Text Area
+        gridbag.gridy = 1;
+        gridbag.gridwidth = 2; // Span across both columns
+        gridbag.weightx = 1.0;  // Fill horizontally
+        gridbag.weighty = 0.7;
+        gridbag.fill = GridBagConstraints.BOTH;
+        contentPane.add(announcementTextArea, gridbag);
+
+        // Submit Button
+        gridbag.gridx = 0;
+        gridbag.gridy = 2;
+        gridbag.gridwidth = 1; // Keep spanning both columns
+        gridbag.weightx = 0.1;  // Fill horizontally
+        gridbag.weighty = 0.1;
+        gridbag.fill = GridBagConstraints.BOTH;
+        contentPane.add(submitButton, gridbag);
+
+        submitButton.setSize(new Dimension(80, 30));
     }
+    /*
     protected Component formatLabel(JLabel label) {
-        label.setFont(new Font("Arial", Font.BOLD, 30));
+        label.setFont(new Font("Arial", Font.BOLD, 65));
         label.setForeground(new Color(70, 130, 180));
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setAlignmentY(JLabel.CENTER);
-        label.setBackground(Color.white);
+        label.setBackground(panelColor);
         label.setOpaque(true);
         return label;
     }
 
+     */
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        super.actionPerformed(e);
+        String post = announcementTextArea.getText();
 
         if (e.getSource() == submitButton) {
-            String instructorAnnouncement = announcementTextArea.getText();
-            storeAnnouncement(instructorAnnouncement);
-        }
-    }
+            try (Socket socket = new Socket(ip, 500);
+                 OutputStream out = socket.getOutputStream();
+                 InputStream in = socket.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
 
-    private void storeAnnouncement(String announcement) {
-        try (Connection connection = establishConnection()) {
-            String query = "INSERT INTO announcements (announcement_text) VALUES (?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, announcement);
-                preparedStatement.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Announcement submitted successfully.");
+                //out.write("AnnouncementPost".getBytes());
+                String data = String.format("%s\n",post);
+                out.write(data.getBytes());
+
+                String response = reader.readLine();
+                System.out.println(response);
+                if (response.equals("posted")) {
+                    JOptionPane.showMessageDialog(this, "Announcement is successfully posted");
+
+                } else {
+                    JOptionPane.showMessageDialog(this, "Announcement has not been posted. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+                out.close();
+                in.close();
+                socket.close();
             }
-        } catch (SQLException ex) {
-            handleDatabaseError(ex);
+            catch(IOException ex){
+                System.out.println(ex.getMessage());
+            }
+            catch(Exception ex){
+                System.out.println(ex.getMessage());
+            }
         }
-    }
-
-    private Connection establishConnection() {
-        try {
-            String url = "jdbc:mysql://your-database-url";
-            String user = "your-username";
-            String password = "your-password";
-            return DriverManager.getConnection(url, user, password);
-        } catch (SQLException e) {
-            handleConnectionError(e);
-            return null;
-        }
-    }
-
-    private void handleDatabaseError(SQLException ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Error storing announcement.");
-    }
-
-    private void handleConnectionError(SQLException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Error establishing database connection.");
     }
 }
 

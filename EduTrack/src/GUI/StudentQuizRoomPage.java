@@ -5,63 +5,53 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
-
-
 public class StudentQuizRoomPage extends StudentHomePage implements ActionListener {
-    String[] questions = {
+    // Fields
+    private String[] questions = {
             "Which company created Java?",
             "Which year was java created?",
             "What was Java originally called?",
             "Who is credited with creating java?"
     };
-    String[][] options = {
+    private String[][] options = {
             {"Sun Microsystems", "Starbucks", "Microsoft", "Alphabet"},
             {"1989", "1996", "1972", "1492"},
             {"Apple", "Latte", "Oak", "Koffiking"},
             {"Steve Jobs", "Bill Gates", "James Gosling", "Matt Damon"}
     };
-    char[] answers = {'A', 'B', 'C', 'C'};
-    char[] choices = new char[questions.length];
-    char guess;
-    char answer;
-    int counter;
-    int index;
-    int correct_guesses=0;
-    int total_questions=questions.length;
-    int result;
-    int seconds=10;
-    JTextField textfield = new JTextField();
-    JTextArea textarea= new JTextArea();
-    JButton buttonA=new JButton();
-    JButton buttonB=new JButton();
-    JButton buttonC= new JButton();
-    JButton buttonD=new JButton();
-    JButton previousButton=new JButton();
-    JButton nextButton=new JButton();
-    JButton submitButton=new JButton();
-    JLabel answer_labelA=new JLabel();
-    JLabel answer_labelB=new JLabel();
-    JLabel answer_labelC=new JLabel();
-    JLabel answer_labelD=new JLabel();
-    JLabel time_label=new JLabel();
-    JLabel seconds_left=new JLabel();
-    JTextField number_right= new JTextField();
-    JTextField percentage= new JTextField();
-    ButtonGroup buttonGroup = new ButtonGroup();
-    JRadioButton option1 = new JRadioButton("Option 1");
-    JRadioButton option2 = new JRadioButton("Option 2");
-    JRadioButton option3 = new JRadioButton("Option 3");
-    JRadioButton option4=new JRadioButton("Option 4");
+    private char[] answers = {'A','B','C','C'};
+    private char [] choices = new char[questions.length];
+    private char answer;
+    private int counter, index, correct_guesses=0, total_questions=questions.length, result, seconds=10;
 
-    public StudentQuizRoomPage() {
-        super("EduTrack - Quiz Room");
-
-        setSize(670,670);
+    // Components
+    private JTextField textfield = new JTextField();
+    private JTextArea textarea= new JTextArea();
+    private JButton buttonA=new JButton(), buttonB=new JButton(), buttonC= new JButton(), buttonD=new JButton(), previousButton=new JButton(), nextButton=new JButton(),
+            submitButton=new JButton(), revealAnswer= new JButton();
+    private JLabel answer_labelA=new JLabel(), answer_labelB=new JLabel(), answer_labelC=new JLabel(), answer_labelD=new JLabel(), time_label=new JLabel(), seconds_left=new JLabel();
+    private JTextField number_right= new JTextField(), percentage= new JTextField();
+    private int second=60, minute=10, delay = 1000; //milliseconds
+    Timer timer = new Timer(1000, (ActionEvent e) -> {
+        seconds--;
+        seconds_left.setText(String.valueOf(seconds));
+        if (seconds <= 0) {
+            results();
+            revealAnswer.setEnabled(true);
+            submitButton.setEnabled(false);
+        }
+    });
+    StudentQuizRoomPage() {
+        // Next Question Button
+        super("Student Quiz Room");
+        // Frame setup
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(675,675);
         getContentPane().setBackground(new Color(211, 211, 211));
         setLayout(null);
         setLocationRelativeTo(null);
         setResizable(false);
+
 
         textfield.setBounds(0,0,650,50);
         textfield.setBackground(new Color(25,25,25));
@@ -92,15 +82,17 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         submitButton.addActionListener(this);
         submitButton.setText("Submit");
 
+        revealAnswer.setBounds(400,490,100,30);
+        revealAnswer.setFont(new Font("Arial", Font.BOLD, 15));
+        revealAnswer.setFocusable(false);
+        revealAnswer.addActionListener(this);
+        revealAnswer.setText("reveal");
+
         previousButton.setBounds(400,520,100,30);
         previousButton.setFont(new Font("Arial", Font.BOLD, 15));
         previousButton.setFocusable(false);
         previousButton.addActionListener(this);
         previousButton.setText("Previous");
-        buttonGroup.add(option1);
-        buttonGroup.add(option2);
-        buttonGroup.add(option3);
-        buttonGroup.add(option4);
 
 
         answer_labelA.setBounds(125,100,500,100);
@@ -141,14 +133,14 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         time_label.setHorizontalAlignment(JTextField.CENTER);
         time_label.setText("Timer");
 
-        number_right.setBounds(225,225,200,100);
+        number_right.setBounds(450,225,200,100);
         number_right.setBackground(new Color(25,25,25));
         number_right.setForeground(new Color(70, 130, 180));
         number_right.setFont(new Font("Arial", Font.BOLD,50));
         number_right.setBorder(BorderFactory.createBevelBorder(1));
         number_right.setEditable(false);
 
-        percentage.setBounds(225,325,200,100);
+        percentage.setBounds(450,325,200,100);
         percentage.setBackground(new Color(50,50,50));
         percentage.setForeground(new Color(70, 130, 180));
         percentage.setFont(new Font("Arial", Font.BOLD, 50));
@@ -157,12 +149,14 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         percentage.setEditable(false);
         setButtons();
 
+
         ImageIcon icon = createImageIcon("icon2.jpeg");
         if (icon != null) {
             setIconImage(icon.getImage());
         }
 
         add(time_label);
+        add(revealAnswer);
         add(seconds_left);
         add(answer_labelA);
         add(answer_labelB);
@@ -171,130 +165,158 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         add(previousButton);
         add(submitButton);
         add(nextButton);
-        add(option1);
-        add(option2);
-        add(option3);
-        add(option4);
+        add(buttonA);
+        add(buttonB);
+        add(buttonC);
+        add(buttonD);
         add(textarea);
         add(textfield);
         setVisible(true);
-        add(option1);
         nextQuestion();
+        timer.start();
+        revealAnswer.setEnabled(false);
     }
-    private void initializeUI(){
 
-    }
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==nextButton){
-            if (index < questions.length) {
-                index++;
-                textfield.setText("Question " + (index + 1)+"/"+ questions.length);
-                textarea.setText(questions[index-1]);
-                answer_labelA.setText(options[index][0]);
-                answer_labelB.setText(options[index][1]);
-                answer_labelC.setText(options[index][2]);
-                answer_labelD.setText(options[index][3]);
+        try {
+            if (e.getSource() == nextButton) {
+                nextQuestion();
             }
-            else {
-                results();
+            if (e.getSource().equals(buttonA)) {
+                answer = 'A';
+                if (answer == answers[index]) {
+                    choices[index] = answer;
+                }
+                nextQuestion();
+            }
+            if (e.getSource() == buttonB) {
+                answer = 'B';
+                if (answer == answers[index]) {
+                    choices[index] = answer;
+                }
+                nextQuestion();
+            }
+            if (e.getSource() == buttonC) {
+                answer = 'C';
+                if (answer == answers[index]) {
+                    choices[index] = answer;
+                }
+                nextQuestion();
+            }
 
+            if (e.getSource() == buttonD) {
+                answer = 'D';
+                if (answer == answers[index]) {
+                    choices[index] = answer;
+                }
+                nextQuestion();
             }
         }
-        if (e.getSource() == option1) {
-            answer='A';
-            if (answer == answers[index]) {
-                correct_guesses++;
-                choices[index]= answer;
-            }
-            nextQuestion();
+        catch(Exception ex)
+        {
+            JOptionPane.showMessageDialog(this, "You have reached the end of the quiz", "Message", JOptionPane.ERROR_MESSAGE);
         }
-        if (e.getSource() == option2) {
-            answer = 'B';
-            if (answer == answers[index]) {
-                correct_guesses++;
-                choices[index]= answer;
-            }
-            nextQuestion();
-        }
-        if (e.getSource() == option3) {
-            answer = 'C';
-            if (answer == answers[index]) {
-                correct_guesses++;
-                choices[index]= answer;
-            }
-            nextQuestion();
-        }
-
-        if (e.getSource() == option4) {
-            answer = 'D';
-            if (answer == answers[index]) {
-                choices[index]= answer;
-            }
-            nextQuestion();
-        }
-
-
-        if(e.getSource()==previousButton){
-            if (index>0) {
+        if (e.getSource() == previousButton) {
+            if (index > 0) {
                 index--;
-                textfield.setText("Question " + (index+1)+"/"+ questions.length);
+                textfield.setText("Question " + (index) + "/" + questions.length);
                 textarea.setText(questions[index]);
                 answer_labelA.setText(options[index][0]);
                 answer_labelB.setText(options[index][1]);
                 answer_labelC.setText(options[index][2]);
                 answer_labelD.setText(options[index][3]);
+                nextButton.setEnabled(true);
+                resetText();
             }
         }
-        if(e.getSource()==submitButton){
+        if (e.getSource() == submitButton) {
             results();
+            revealAnswer.setEnabled(true);
         }
+        if (e.getSource() == revealAnswer) {
+
+            if (answers[index] == 'A') {
+                answer_labelA.setForeground(new Color(0, 250, 80));
+                answer_labelA.setFont(new Font("Arial", Font.PLAIN, 35));
+            }
+            if (answers[index] == 'B') {
+                answer_labelB.setForeground(new Color(0, 250, 80));
+                answer_labelB.setFont(new Font("Arial", Font.PLAIN, 35));
+            }
+            if (answers[index] == 'C') {
+                answer_labelC.setForeground(new Color(0, 250, 80));
+                answer_labelC.setFont(new Font("Arial", Font.PLAIN, 35));
+            }
+            if (answers[index] == 'D') {
+                answer_labelD.setForeground(new Color(0, 250, 80));
+                answer_labelD.setFont(new Font("Arial", Font.PLAIN, 35));
+
+            }
+        }
+
     }
-    public void nextQuestion(){
-        if(index<questions.length-1) {
+    public void nextQuestion() {
+        if (index < questions.length){
             index++;
             textfield.setText("Question " + (index) + "/" + questions.length);
-            textarea.setText(questions[index]);
-            answer_labelA.setText(options[index][0]);
-            answer_labelB.setText(options[index][1]);
-            answer_labelC.setText(options[index][2]);
-            answer_labelD.setText(options[index][3]);
-        }
-        else{
-            option1.setEnabled(false);
-            option2.setEnabled(false);
-            option3.setEnabled(false);
-            option4.setEnabled(false);
-            results();
+            textarea.setText(questions[index-1]);
+            answer_labelA.setText(options[index-1][0]);
+            answer_labelB.setText(options[index-1][1]);
+            answer_labelC.setText(options[index-1][2]);
+            answer_labelD.setText(options[index-1][3]);
+            nextButton.setEnabled(true);
+            resetText();
+        } else if (index == questions.length) {
+            nextButton.setEnabled(false);
+
         }
     }
     public void setButtons(){
-        option1.setBounds(0,100,100,100);
-        option1.setFont(new Font("Arial", Font.BOLD, 35));
-        option1.setFocusable(false);
-        option1.addActionListener(this);
-        option1.setText("A");
+        Color buttonColor = new Color(70,130,180);
+        Font buttonFont = new Font("Arial", Font.BOLD, 35);
 
+        buttonA.setBounds(0,100,100,100);
+        buttonA.setBackground(buttonColor);
+        buttonA.setForeground(Color.WHITE);
+        buttonA.setFont(buttonFont);
+        buttonA.setFocusable(false);
+        buttonA.addActionListener(this);
+        buttonA.setText("A");
 
-        option2.setBounds(0,200,100,100);
-        option2.setFont(new Font("Arial", Font.BOLD, 35));
-        option2.setFocusable(false);
-        option2.addActionListener(this);
-        option2.setText("B");
+        // Button B
+        buttonB.setBounds(0, 200, 100, 100);
+        buttonB.setBackground(buttonColor);
+        buttonB.setForeground(Color.WHITE); // White text
+        buttonB.setFont(buttonFont);
+        buttonB.setFocusable(false);
+        buttonB.addActionListener(this);
+        buttonB.setText("B");
 
+        // Button C
+        buttonC.setBounds(0, 300, 100, 100);
+        buttonC.setBackground(buttonColor);
+        buttonC.setForeground(Color.WHITE); // White text
+        buttonC.setFont(buttonFont);
+        buttonC.setFocusable(false);
+        buttonC.addActionListener(this);
+        buttonC.setText("C");
 
-        option3.setBounds(0,300,100,100);
-        option3.setFont(new Font("Arial", Font.BOLD, 35));
-        option3.setFocusable(false);
-        option3.addActionListener(this);
-        option3.setText("C");
-
-        option4.setBounds(0,400,100,100);
-        option4.setFont(new Font("Arial", Font.BOLD, 35));
-        option4.setFocusable(false);
-        option4.addActionListener(this);
-        option4.setText("D");
-
+        // Button D
+        buttonD.setBounds(0, 400, 100, 100);
+        buttonD.setBackground(buttonColor);
+        buttonD.setForeground(Color.WHITE); // White text
+        buttonD.setFont(buttonFont);
+        buttonD.setFocusable(false);
+        buttonD.addActionListener(this);
+        buttonD.setText("D");
+    }
+    public void resetText()
+    {
+        answer_labelA.setForeground(new Color(70, 130, 180));
+        answer_labelB.setForeground(new Color(70, 130, 180));
+        answer_labelC.setForeground(new Color(70, 130, 180));
+        answer_labelD.setForeground(new Color(70, 130, 180));
     }
     public void results() {
         buttonA.setEnabled(false);
@@ -302,6 +324,7 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         buttonC.setEnabled(false);
         buttonD.setEnabled(false);
         submitButton.setEnabled(false);
+        timer.stop();
 
         for(int j = 0; j<questions.length; j++)
         {
@@ -326,3 +349,4 @@ public class StudentQuizRoomPage extends StudentHomePage implements ActionListen
         add(percentage);
     }
 }
+

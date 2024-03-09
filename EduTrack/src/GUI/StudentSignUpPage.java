@@ -13,12 +13,10 @@ import java.util.List;
 public class StudentSignUpPage extends Page implements ActionListener {
     private JLabel signUpLabel;
     private JTextField firstNameField, lastNameField, userNameField, idNumberField, emailField, passwordField;
-    private JPanel signUpPanel, imagePanel;
-    private JButton signUpButton;
-    protected String email;
-
+    private final JPanel signUpPanel, imagePanel, backPanel;
+    private final JButton signUpButton, backButton;
     StudentSignUpPage() {
-        super("EduTrack - Student Sign Up", 800, 700, 211, 211, 211);
+        super("EduTrack - Student Sign Up", true, 800,700, 211, 211, 211);
 
         // Create and configure the "Sign Up" label
         Border border = BorderFactory.createEtchedBorder();
@@ -31,6 +29,7 @@ public class StudentSignUpPage extends Page implements ActionListener {
         signUpLabel.setBackground(Color.white);
         signUpLabel.setOpaque(true);
         signUpLabel.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10))); // Add padding
+
         // Create a panel for the "Sign Up" label and center it at the top
         this.signUpPanel = new JPanel(new BorderLayout());
         signUpPanel.setPreferredSize(new Dimension(0, 120));
@@ -62,22 +61,29 @@ public class StudentSignUpPage extends Page implements ActionListener {
         configureButton(signUpButton,1, 6, 10, 0, 10, 0);
         inputPanel.add(signUpButton, constraints);
 
+        // Back Panel
+        backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Back Button
+        this.backButton = new JButton("Back");
+        configureButton(backButton, 1, 2, 10, 0, 10, 0);
+        backPanel.add(backButton);
+
+
         page.add(northPanel, BorderLayout.NORTH);
         page.add(inputPanel, BorderLayout.CENTER);
+        page.add(backPanel, BorderLayout.SOUTH);
         page.setVisible(true);
-    }
-    StudentSignUpPage(String title){
-        super(title, 800,700,211,211,211);
     }
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
         button.setFocusable(false);
         button.setFont(new Font("Arial", Font.BOLD, 18));
         button.setForeground(Color.white);
-        button.setBackground(new Color(70, 130, 180)); // Set color to a shade of blue
+        button.setBackground(new Color(70, 130, 180)); // Sets color to a shade of blue
         button.addActionListener(this);
         constraints.gridy = gridy;
         constraints.gridx = gridx;
-        constraints.insets = new Insets(top,left, bottom, right); // Add some spacing below the last text field
+        constraints.insets = new Insets(top,left, bottom, right); // Adds some spacing below the last text field
     }
     private void saveEmailToFile(String email) {
         try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("email.txt"))) {
@@ -96,55 +102,43 @@ public class StudentSignUpPage extends Page implements ActionListener {
             String email = emailField.getText();
             String password = passwordField.getText();
 
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             List<String> validationErrors = isValidSignUpInput(firstName, lastName, username, idNumber, email, password);
 
             if (validationErrors.isEmpty()) {
-                try {
-                    try {
-                        Socket socket = new Socket(ip, 456); // Replace with server address and port
-                        OutputStream out = socket.getOutputStream();
-                        InputStream in = socket.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                try (Socket socket = new Socket(ip, 100);
+                     OutputStream out = socket.getOutputStream();
+                     InputStream in = socket.getInputStream();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                    String data = String.format("%s,%s,%s,%s,%s,%s\n", firstName, lastName, username, idNumber, email, password);
+                    out.write(data.getBytes());
 
-                        // Send data in a structured format (e.g., JSON or CSV)
-                        String data = String.format("%s,%s,%s,%s,%s,%s\n", firstName, lastName, username, idNumber, email, password);
-                        out.write(data.getBytes());
+                    String response = reader.readLine();
 
-                        String response = reader.readLine();
-
-                        if (response.equals("Success")) {
-                            try (Socket socket1 = new Socket(ip, 358);
-                                 OutputStream Out = socket1.getOutputStream();
-                                 InputStream In = socket1.getInputStream();
-                                 BufferedReader Reader = new BufferedReader(new InputStreamReader(In))) {
-                                saveEmailToFile(email);
-
-                                String send = "12";
-                                String data1 = String.format("%s,%s\n", send, email);
-                                Out.write(data1.getBytes());
-                                String response3 = Reader.readLine();
-                                if ("Sent".equals(response3)) {
-                                    JOptionPane.showMessageDialog(this, "The verification code sent to the email!");
-                                    new StudentVerificationPage(); // Pass email to verification page
-                                    page.dispose();
-                                } else {
-                                    JOptionPane.showMessageDialog(this, "Error. Verification code not be sent to the email!");
-                                }
+                    if (response.equals("Success")) {
+                        try (Socket socket1 = new Socket(ip, 150);
+                             OutputStream Out = socket1.getOutputStream();
+                             InputStream In = socket1.getInputStream();
+                             BufferedReader Reader = new BufferedReader(new InputStreamReader(In))) {
+                            saveEmailToFile(email);
+                            String data1 = String.format("%s\n", email);
+                            Out.write(data1.getBytes());
+                            String response3 = Reader.readLine();
+                            if ("VerificationCodeSent".equals(response3)) {
+                                JOptionPane.showMessageDialog(this, "The verification code sent to the email!");
+                                new StudentVerificationPage(); // Pass email to verification page
+                                page.dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(this, "Error. Verification code not be sent to the email!");
                             }
-                        } else{
-                            JOptionPane.showMessageDialog(this, "Sign Up Failed. Please try again.");
                         }
-                        out.close();
-                        in.close();
-                        socket.close();
-
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
-                                "Warning", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Sign Up Failed. Please try again.");
                     }
-                }
-                catch (HeadlessException ex) {
-                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "An error has occurred. Please try again\n" + ex.getMessage(),
+                            "Warning", JOptionPane.WARNING_MESSAGE);
                 }
             } else {
                 String errorMessage = "Not Valid Inputs:\n";
@@ -152,6 +146,14 @@ public class StudentSignUpPage extends Page implements ActionListener {
                     errorMessage += "- " + error + "\n";
                 }
                 JOptionPane.showMessageDialog(null, errorMessage);
+            }
+            setCursor(Cursor.getDefaultCursor());
+        } else if (e.getSource() == backButton) {
+            try {
+                new StudentLoginPage();
+                page.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
             }
         }
     }

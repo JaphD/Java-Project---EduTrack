@@ -5,10 +5,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class StudentLoginPage extends Page implements ActionListener {
@@ -18,7 +15,7 @@ public class StudentLoginPage extends Page implements ActionListener {
     private final JButton signUpButton, loginButton;
 
     StudentLoginPage() {
-        super("EduTrack - Student Login", 800, 700, 211, 211, 211);
+        super("EduTrack - Student Login", true, 800, 700, 211,211, 211);
 
         // Create and configure the "Login" label
         Border border = BorderFactory.createEtchedBorder();
@@ -36,7 +33,6 @@ public class StudentLoginPage extends Page implements ActionListener {
         // Create a panel for the "Login" label and center it at the top
         loginPanel = new JPanel(new BorderLayout());
         loginPanel.setPreferredSize(new Dimension(0, 120)); // Increased height for a more prominent look
-
         loginPanel.add(loginLabel, BorderLayout.CENTER);
 
         imagePanel = new JPanel(new BorderLayout());
@@ -54,24 +50,22 @@ public class StudentLoginPage extends Page implements ActionListener {
         centerPanel.add(imagePanel, BorderLayout.NORTH);
         centerPanel.add(inputPanel,BorderLayout.CENTER);
 
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel = new JPanel(new GridBagLayout());
         constraints = new GridBagConstraints();
-
-        // Sign Up Button
-        signUpButton = new JButton("Sign Up");
-        configureButton(signUpButton, 1, 2, 10, 0, 10, 0);
-        inputPanel.add(signUpButton,constraints);
-        buttonPanel.add(signUpButton);
 
         // Login Button
         loginButton = new JButton("Login");
-        configureButton(loginButton, 2, 2, 10, 10, 0, 0);
-        inputPanel.add(loginButton);
-        buttonPanel.add(loginButton);
+        configureButton(loginButton, 1, 5, 10, 10, 0, 0);
+        inputPanel.add(loginButton, constraints);
+
+        // Sign Up Button
+        signUpButton = new JButton("Sign Up");
+        configureButton(signUpButton, 1, 6, 10, 0, 10, 0);
+        inputPanel.add(signUpButton,constraints);
 
         page.add(loginPanel,BorderLayout.NORTH);
         page.add(centerPanel, BorderLayout.CENTER);
-        page.add(buttonPanel, BorderLayout.SOUTH);
+       // page.add(buttonPanel, BorderLayout.SOUTH);
         page.setVisible(true);
     }
     private void configureButton(JButton button, int gridx, int gridy, int top, int left, int bottom, int right) {
@@ -89,46 +83,44 @@ public class StudentLoginPage extends Page implements ActionListener {
         if (e.getSource() == signUpButton) {
             try {
                 new StudentSignUpPage();
-                page.dispose(); // Close current window after opening new page
+                page.dispose();
             } catch (Exception ex) {
-                // Handle error opening StudentLoginPage
-                JOptionPane.showMessageDialog(this, "Error opening Student Login: " + ex.getMessage());
+                handleException("Error opening Student Sign Up", ex);
             }
         }
         else if(e.getSource() == loginButton){
             String username = usernameField.getText();
             String password = passwordField.getText();
 
+            // Set the cursor to wait mode
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             if(areNotNull(username, password)) {
                 try {
-                    try {
-                        Socket socket = new Socket(ip, 456); // Replace with server address and port
-                        OutputStream out = socket.getOutputStream();
+                    Socket socket = new Socket(ip, 100);
+                    OutputStream out = socket.getOutputStream();
 
-                        // Send data in a structured format (e.g., CSV)
-                        String data = String.format("%s,%s\n", username, password);
-                        out.write(data.getBytes());
+                    // Send data in a structured format
+                    String data = String.format("%s,%s\n",username,password);
+                    out.write(data.getBytes());
 
-                        InputStream in = socket.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                        String response = reader.readLine();
+                    InputStream in = socket.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    String response = reader.readLine();
 
-                        if (response.equals("Success")) {
-                            new StudentHomePage();
-                            page.dispose();
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Login Failed. Please check your credentials");
-                        }
-                        out.close();
-                        in.close();
-                        socket.close();
+                    if ("2".equals(response)) {
+                        new StudentHomePage();
+                        page.dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Login Failed. Please check your credentials");
                     }
-                catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "An error has occurred: " + ex.getMessage());
-                    }
-                }
-            catch(Exception ex){
-                    JOptionPane.showMessageDialog(this, "Error opening Student Homepage: " + ex.getMessage());
+                    in.close();
+                    socket.close();
+                    out.close();
+                } catch (IOException ex) {
+                handleException("Error communicating with server", ex);
+                } finally {
+                setCursor(Cursor.getDefaultCursor());
                 }
             }
             else {

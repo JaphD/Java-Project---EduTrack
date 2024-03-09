@@ -9,13 +9,11 @@ public  class StudentHomePage extends Page{
     protected JMenu homeMenu, menuMenu;
     protected JMenuItem homeItem, logoutItem, accountItem, assessmentItem, attendanceItem, quizRoomItem, contactItem;
     private JMenuBar studentMenuBar;
+    protected Color panelColor = new Color(211,211,211);
+    protected Color backgroundColor = new Color(70,130,180);
 
     public StudentHomePage() {
-        super("EduTrack - Student Homepage", 211, 211, 211);
-
-        // Panel Color and Background Color
-        Color panelColor = new Color(211,211,211);
-        Color backgroundColor = new Color(70,130,180);
+        super("EduTrack - Student Home", false,0,0,211, 211, 211);
 
         // Create panels for each button and set layout
         JPanel announcementPanel = createPanel("Announcement", "Announcement.png", "Announcement", panelColor);
@@ -34,7 +32,8 @@ public  class StudentHomePage extends Page{
         this.getContentPane().setBackground(backgroundColor);
     }
     StudentHomePage(String title) {
-        super(title, 211, 211, 211);
+        super(title, false,0, 0, 211, 211, 211);
+
         initializeHome();
     }
     private void initializeHome(){
@@ -49,35 +48,26 @@ public  class StudentHomePage extends Page{
 
         JMenuItem accountItem = new JMenuItem("Account");
         JMenuItem assessmentItem = new JMenuItem("Assessment");
-        JMenuItem attendanceItem = new JMenuItem("Attendance");
         JMenuItem quizRoomItem = new JMenuItem("Quiz Room");
-        JMenuItem contactItem = new JMenuItem("Contact");
+
 
         addMenuItemListener(homeItem, e -> {}, this::home);
         addMenuItemListener(logoutItem, e -> {}, this::logout);
         addMenuItemListener(accountItem, e -> {}, this::account);
         addMenuItemListener(assessmentItem, e -> {}, this::assessment);
-        addMenuItemListener(attendanceItem, e -> {}, this::attendance);
         addMenuItemListener(quizRoomItem, e -> {}, this::quiz);
-        addMenuItemListener(contactItem, e -> {}, this::contact);
+
 
         formatMenuItem(homeItem);
         formatMenuItem(logoutItem);
 
         formatMenuItem(accountItem);
         formatMenuItem(assessmentItem);
-        formatMenuItem(attendanceItem);
         formatMenuItem(quizRoomItem);
-        formatMenuItem(contactItem);
 
-        homeMenu.add(homeItem);
-        homeMenu.add(logoutItem);
+        homeMenu.add(homeItem); homeMenu.add(logoutItem);
 
-        menuMenu.add(accountItem);
-        menuMenu.add(assessmentItem);
-        menuMenu.add(attendanceItem);
-        menuMenu.add(quizRoomItem);
-        menuMenu.add(contactItem);
+        menuMenu.add(accountItem); menuMenu.add(assessmentItem); menuMenu.add(quizRoomItem);
 
         studentMenuBar.add(homeMenu);
         studentMenuBar.add(menuMenu);
@@ -92,15 +82,13 @@ public  class StudentHomePage extends Page{
         this.setVisible(true);
     }
     private void addMenuItemListener(JMenuItem menuItem, ActionListener listener, ActionMethod action) {
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                listener.actionPerformed(e);
-                action.performAction();
-            }
+        menuItem.addActionListener((ActionEvent e) -> {
+            listener.actionPerformed(e);
+            action.performAction();
         });
     }
-    private JPanel createPanel(String buttonText, String imagePath,String tooltipText, Color backgroundColor) {
+
+    JPanel createPanel(String buttonText, String imagePath,String tooltipText, Color backgroundColor) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(backgroundColor);
 
@@ -122,12 +110,7 @@ public  class StudentHomePage extends Page{
         }
 
         button.setToolTipText(tooltipText);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleButtonClick(buttonText);
-            }
-        });
+        button.addActionListener(e -> handleButtonClick(buttonText));
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.BOTH;
@@ -141,7 +124,7 @@ public  class StudentHomePage extends Page{
         navigateToPage(StudentHomePage.class);
     }
     private void logout() {
-       navigateToPage(LoginPage.class);
+        navigateToPage(LoginPage.class);
     }
     private void account() {
         navigateToPage(StudentAccountPage.class);
@@ -149,51 +132,41 @@ public  class StudentHomePage extends Page{
     private void assessment() {
         navigateToPage(StudentAssessmentPage.class);
     }
-    private void attendance() {
-        navigateToPage(StudentAssessmentPage.class);
-    }
     private void quiz() {
         navigateToPage(StudentQuizRoomPage.class);
     }
-    private void contact() {
-        navigateToPage(StudentContactPage.class);
-    }
-    private void handleButtonClick(String buttonText) {
+    void handleButtonClick(String buttonText) {
         switch (buttonText) {
-            case "Announcement":
-                // Create and show a new instance of StudentAnnouncementPage
+            case "Announcement" -> {
                 new StudentAnnouncementPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Schedule":
-                // Create and show a new instance of StudentSchedulePage
+                this.dispose();
+            }
+            case "Schedule" -> {
                 new StudentSchedulePage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Course Material":
-                // Create and show a new instance of StudentCourseMaterialPage
+                this.dispose();
+            }
+            case "Course Material" -> {
                 new StudentCourseMaterialPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            case "Assignment":
-                // Create and show a new instance of StudentAssignmentPage
+                this.dispose();
+            }
+            case "Assignment" -> {
                 new StudentAssignmentPage();
-                this.dispose(); // Dispose of the current page
-                break;
-            default:
-                // Handle unknown button text
-                break;
+                this.dispose();
+            }
+            default -> {
+                // Handles unknown button text
+            }
         }
+    }
+
+    @Override
+    void formatButton(JButton button) {
+        button.setFont(new Font("Arial", Font.PLAIN, 20));
+        button.setForeground(new Color(255, 255, 255));
+        button.setBackground(new Color(70, 130, 180));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     }
     @Override
     void actionPerformed(ActionEvent e) {
-
     }
 }
-
-
-
-
-
-
-
