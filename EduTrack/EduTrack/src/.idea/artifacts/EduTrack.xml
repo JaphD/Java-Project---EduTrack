@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="EduTrack">
+    <output-path>$PROJECT_DIR$/out/artifacts/EduTrack</output-path>
+    <root id="root">
+      <element id="archive" name="EduTrack.jar">
+        <element id="module-output" name="EduTrack" />
+        <element id="directory" name="META-INF">
+          <element id="file-copy" path="$PROJECT_DIR$/GUI/META-INF/MANIFEST.MF" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
